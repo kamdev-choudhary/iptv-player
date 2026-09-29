@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tuner — watch free-to-air TV channels</title>
+<meta name="description" content="Search and watch thousands of publicly available IPTV channels from 178 countries, straight in the browser.">
+<meta name="theme-color" content="#0c1018">
+<meta property="og:title" content="Tuner">
+<meta property="og:description" content="Search and watch thousands of publicly available IPTV channels in your browser.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="fetch" href="data/channels.json" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+<a class="skip" href="#results">Skip to channels</a>
+
+<header class="top">
+  <h1 class="wordmark">
+    <span class="wordmark__bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+    Tuner
+  </h1>
+
+  <search class="find">
+    <label class="find__label" for="q">Search channels</label>
+    <input id="q" class="find__input" type="search" autocomplete="off" spellcheck="false"
+           placeholder="Search by channel, country or category" aria-describedby="q-hint">
+    <kbd class="find__key" aria-hidden="true">/</kbd>
+    <p id="q-hint" class="find__hint" role="status"></p>
+  </search>
+
+  <div class="top__actions">
+    <button type="button" class="btn" id="open-playlist">Add playlist</button>
+    <button type="button" class="btn" id="open-settings" aria-haspopup="dialog">Settings</button>
+    <button type="button" class="btn btn--icon filters-toggle" id="toggle-filters" aria-expanded="false" aria-controls="rail">
+      <span class="sr">Show filters</span>
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M1 3h14M4 8h8M6.5 13h3" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="rail" id="rail" aria-label="Filters">
+    <nav class="rail__group" aria-label="Library">
+      <ul class="lib" id="lib">
+        <li><button type="button" class="lib__item is-on" data-view="all" aria-current="true">All channels <span class="lib__n" data-count="all"></span></button></li>
+        <li><button type="button" class="lib__item" data-view="favorites">Favorites <span class="lib__n" data-count="favorites"></span></button></li>
+        <li><button type="button" class="lib__item" data-view="recent">Recent <span class="lib__n" data-count="recent"></span></button></li>
+      </ul>
+      <ul class="lib lib--playlists" id="playlists" hidden></ul>
+    </nav>
+
+    <div class="rail__group">
+      <label class="field">
+        <span class="field__name">Country</span>
+        <select id="f-country" class="field__control"><option value="">Anywhere</option></select>
+      </label>
+      <label class="field">
+        <span class="field__name">Language</span>
+        <select id="f-language" class="field__control"><option value="">Any language</option></select>
+      </label>
+      <label class="field">
+        <span class="field__name">Minimum quality</span>
+        <select id="f-quality" class="field__control">
+          <option value="0">Any</option>
+          <option value="480">480p and up</option>
+          <option value="720">720p and up</option>
+          <option value="1080">1080p and up</option>
+        </select>
+      </label>
+    </div>
+
+    <fieldset class="rail__group">
+      <legend class="field__name">Category</legend>
+      <div class="chips" id="f-categories"></div>
+    </fieldset>
+
+    <fieldset class="rail__group">
+      <legend class="field__name">Hide</legend>
+      <label class="check"><input type="checkbox" id="f-geo"> <span>Geo-blocked sources</span></label>
+      <label class="check"><input type="checkbox" id="f-parttime"> <span>Part-time channels</span></label>
+      <label class="check"><input type="checkbox" id="f-unmatched"> <span>Unverified listings</span></label>
+      <label class="check" id="f-insecure-wrap"><input type="checkbox" id="f-insecure"> <span>Sources this page can't load</span></label>
+    </fieldset>
+
+    <button type="button" class="btn btn--quiet" id="reset">Clear filters</button>
+  </aside>
+
+  <main class="main">
+    <section class="stage" aria-label="Player">
+      <div class="screen" id="screen" data-state="idle">
+        <video id="video" class="screen__video" playsinline controls></video>
+
+        <div class="card" id="card" aria-live="polite">
+          <div class="card__bars" aria-hidden="true">
+            <i style="--bar:var(--bar-grey)"></i><i style="--bar:var(--bar-yellow)"></i><i style="--bar:var(--bar-cyan)"></i>
+            <i style="--bar:var(--bar-green)"></i><i style="--bar:var(--bar-magenta)"></i><i style="--bar:var(--bar-red)"></i>
+            <i style="--bar:var(--bar-blue)"></i>
+          </div>
+          <div class="card__plate">
+            <p class="card__head" id="card-head">No signal</p>
+            <p class="card__body" id="card-body">Pick a channel below, or search for one.</p>
+            <div class="card__act" id="card-act" hidden></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="now" id="now" hidden>
+        <img class="now__logo" id="now-logo" alt="" width="56" height="40">
+        <div class="now__id">
+          <h2 class="now__name" id="now-name"></h2>
+          <p class="now__meta" id="now-meta"></p>
+        </div>
+        <div class="now__tools">
+          <button type="button" class="btn" id="fav">Save</button>
+          <button type="button" class="btn" id="next-source">Next source</button>
+          <label class="field field--inline" id="source-wrap" hidden>
+            <span class="sr">Source</span>
+            <select id="source-pick" class="field__control field__control--mono"></select>
+          </label>
+          <label class="field field--inline" id="level-wrap" hidden>
+            <span class="sr">Resolution</span>
+            <select id="level-pick" class="field__control field__control--mono"></select>
+          </label>
+          <button type="button" class="btn btn--icon" id="pip" title="Picture in picture"><span class="sr">Picture in picture</span>
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><rect x="1" y="2.5" width="14" height="11" rx="1.5" stroke="currentColor" fill="none" stroke-width="1.4"/><rect x="8" y="7.5" width="6" height="5" rx="1" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="results" id="results" aria-label="Channels">
+      <div class="results__bar">
+        <p class="results__count" id="count" role="status">Loading channels…</p>
+        <label class="field field--inline">
+          <span class="sr">Sort</span>
+          <select id="sort" class="field__control">
+            <option value="name">A to Z</option>
+            <option value="quality">Best quality</option>
+            <option value="sources">Most sources</option>
+          </select>
+        </label>
+      </div>
+      <ul class="grid" id="grid"></ul>
+      <div id="sentinel" class="sentinel" aria-hidden="true"></div>
+      <p class="empty" id="empty" hidden></p>
+    </section>
+
+    <footer class="foot">
+      <p>Channel data from <a href="https://github.com/iptv-org/iptv">iptv-org</a>, rebuilt daily
+         (<time id="built"></time>). Tuner stores nothing about you and hosts no video — every stream
+         is fetched straight from its own publisher.</p>
+      <p>Streams come and go without notice, and roughly half of any public list is offline at a given
+         moment. If a channel won't start, try its other sources.
+         <a href="https://github.com/kamdev-bharatai/iptv-player">Source on GitHub</a></p>
+    </footer>
+  </main>
+</div>
+
+<dialog class="sheet" id="settings-sheet">
+  <form method="dialog" class="sheet__in">
+    <h2 class="sheet__head">Settings</h2>
+    <label class="field">
+      <span class="field__name">CORS proxy</span>
+      <input type="url" id="s-proxy" class="field__control" placeholder="https://your-proxy.example/?url=" autocomplete="off">
+      <span class="field__note">Many broadcasters don't allow browsers from other sites to read their
+        streams. Run your own proxy and put its prefix here, and Tuner will offer it as a retry when a
+        stream is refused. The channel URL is appended to the prefix.</span>
+    </label>
+    <label class="check"><input type="checkbox" id="s-autoproxy"> <span>Use the proxy automatically on failure</span></label>
+    <label class="check"><input type="checkbox" id="s-autonext" checked> <span>Move to the next source when one fails</span></label>
+    <div class="sheet__foot">
+      <button type="button" class="btn btn--quiet" id="wipe">Clear saved data</button>
+      <button class="btn btn--go" value="close">Done</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="sheet" id="playlist-sheet">
+  <form method="dialog" class="sheet__in">
+    <h2 class="sheet__head">Add a playlist</h2>
+    <p class="sheet__lede">Load your own M3U lineup. It stays in this browser.</p>
+    <label class="field">
+      <span class="field__name">Playlist file</span>
+      <input type="file" id="p-file" class="field__control" accept=".m3u,.m3u8,text/plain">
+      <span class="field__note">The reliable route — nothing has to be fetched across origins.</span>
+    </label>
+    <label class="field">
+      <span class="field__name">Playlist URL</span>
+      <input type="url" id="p-url" class="field__control" placeholder="https://example.com/playlist.m3u" autocomplete="off">
+      <span class="field__note">Works when the host allows cross-origin reads, or through your proxy.</span>
+    </label>
+    <p class="sheet__err" id="p-err" role="alert" hidden></p>
+    <div class="sheet__foot">
+      <button class="btn btn--quiet" value="cancel">Cancel</button>
+      <button type="button" class="btn btn--go" id="p-load">Load playlist</button>
+    </div>
+  </form>
+</dialog>
+
+<template id="tpl-card">
+  <li class="cell">
+    <button type="button" class="cell__hit">
+      <span class="cell__art"><img alt="" loading="lazy" decoding="async"></span>
+      <span class="cell__name"></span>
+      <span class="cell__meta"></span>
+    </button>
+    <button type="button" class="cell__fav" aria-pressed="false"><span class="sr">Save channel</span>
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 13.4 3.6 9A2.9 2.9 0 0 1 8 5.2 2.9 2.9 0 0 1 12.4 9z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+    </button>
+  </li>
+</template>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+<script type="module" src="assets/js/app.js"></script>
+</body>
+</html>
