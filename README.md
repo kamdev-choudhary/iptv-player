@@ -5,7 +5,7 @@ A browser IPTV player for the publicly listed channels in the
 from 178 countries, and watch the ones your browser is able to reach. Static site, no
 backend, no tracking, deployed to GitHub Pages.
 
-**Live: https://kamdev-bharatai.github.io/iptv-player/**
+**Live: https://kamdev-choudhary.github.io/iptv-player/**
 
 ## What it does
 

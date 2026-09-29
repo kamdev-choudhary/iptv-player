@@ -34,7 +34,10 @@ jobs:
       - name: Build channel index
         run: node scripts/build-data.mjs
 
+      # Turns Pages on for the repo on the first run, so a fork needs no manual setup.
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - uses: actions/upload-pages-artifact@v3
         with:
