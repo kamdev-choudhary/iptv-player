@@ -60,14 +60,28 @@ function qualityLabel (ch) {
 
 /* ── load ─────────────────────────────────────────────────── */
 
+/** Placeholder tiles so the grid has shape before the index arrives. */
+function showSkeletons (n = 18) {
+  const frag = document.createDocumentFragment()
+  for (let i = 0; i < n; i++) {
+    const li = document.createElement('li')
+    li.className = 'cell skel'
+    li.innerHTML = '<div class="cell__hit"><div class="skel__art"></div><div class="skel__line"></div><div class="skel__line"></div></div>'
+    frag.append(li)
+  }
+  el.grid.replaceChildren(frag)
+}
+
 async function boot () {
   restoreSettings()
   wire()
+  showSkeletons()
 
   let index
   try {
     index = await (await fetch('data/channels.json')).json()
   } catch {
+    el.grid.replaceChildren()
     el.count.textContent = 'Channel list unavailable'
     el.empty.hidden = false
     el.empty.textContent = 'The channel list could not be loaded. Check your connection and reload.'
