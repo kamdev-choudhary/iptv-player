@@ -3,16 +3,9 @@ import { toast } from 'sonner'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Toaster } from '@/components/ui/sonner'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { AppHeader } from '@/components/app-header'
 import { AppSidebar } from '@/components/app-sidebar'
-import { ChannelGrid, GridSkeleton } from '@/components/channel-grid'
+import { ChannelList } from '@/components/channel-list'
 import { CommandPalette } from '@/components/command-palette'
 import { PlayerStage } from '@/components/player-stage'
 import { PlaylistDialog } from '@/components/playlist-dialog'
@@ -24,18 +17,12 @@ import { usePersisted } from '@/hooks/use-store'
 import { activeFilterCount, indexForSearch, runQuery } from '@/lib/channels'
 import { store } from '@/lib/store'
 import { cn } from '@/lib/utils'
-import { BLANK_FILTERS, type Channel, type Filters, type LibraryView, type SortKey } from '@/lib/types'
+import type { Channel, Filters, LibraryView } from '@/lib/types'
 
-/** Tiles painted per scroll batch. */
+/** Rows painted per scroll batch. */
 const PAGE = 60
 
 const PAGE_IS_HTTPS = location.protocol === 'https:'
-
-const SORTS: { value: SortKey; label: string }[] = [
-  { value: 'name', label: 'A to Z' },
-  { value: 'quality', label: 'Best quality' },
-  { value: 'sources', label: 'Most sources' },
-]
 
 export default function App() {
   const { catalog, loading, error } = useCatalog()
@@ -44,14 +31,11 @@ export default function App() {
   const [view, setView] = useState<LibraryView>('all')
   const [playlistId, setPlaylistId] = useState<string | null>(null)
   const [query, setQuery] = useState('')
-  const [sort, setSort] = useState<SortKey>('name')
-  // On an https page this filter is the difference between a working list and
-  // a broken one, so it starts on there.
-  const [filters, setFilters] = useState<Filters>({
-    ...BLANK_FILTERS,
-    hideInsecure: PAGE_IS_HTTPS,
-  })
   const [shown, setShown] = useState(PAGE)
+
+  // Country, language, quality and the rest come back as they were left.
+  const filters = persisted.filters
+  const sort = persisted.sort
 
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -136,7 +120,10 @@ export default function App() {
       playback.open(ch)
       history.replaceState(null, '', `#c=${encodeURIComponent(ch.i)}`)
       document.title = `${ch.n} — Tuner`
-      stageRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+      // Only matters on a narrow screen, where the panes stack.
+      if (window.matchMedia('(max-width: 1279px)').matches) {
+        stageRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+      }
     },
     [playback],
   )
@@ -146,15 +133,12 @@ export default function App() {
     setPlaylistId(playlist)
   }, [])
 
-  const changeFilters = useCallback(
-    (patch: Partial<Filters>) => setFilters((f) => ({ ...f, ...patch })),
-    [],
-  )
+  const changeFilters = useCallback((patch: Partial<Filters>) => store.setFilters(patch), [])
 
   const resetFilters = useCallback(() => {
-    setFilters({ ...BLANK_FILTERS, hideInsecure: filters.hideInsecure })
+    store.resetFilters()
     setQuery('')
-  }, [filters.hideInsecure])
+  }, [])
 
   const adoptPlaylist = useCallback(
     (name: string, channels: Channel[]) => {
@@ -303,25 +287,25 @@ export default function App() {
 
         <SidebarInset className="min-w-0">
           <AppHeader
-            query={query}
             phase={playback.phase}
-            searchRef={searchRef}
-            onQueryChange={setQuery}
             onOpenPalette={() => setPaletteOpen(true)}
             onOpenPlaylist={() => setPlaylistOpen(true)}
             onOpenSettings={() => setSettingsOpen(true)}
           />
 
-          <div className="mx-auto flex w-full max-w-[1800px] flex-col gap-5 px-3 py-4 sm:px-5">
-            {/* The stage stays put while the wall scrolls under it, so picking a
-                channel never costs you your place. */}
-            <div
-              ref={stageRef}
-              className={cn(
-                playback.channel && 'lg:sticky lg:top-[3.5rem] lg:z-20',
-              )}
-            >
-              <div className="bg-background/90 pb-1 lg:backdrop-blur-md">
+          {/* Three panes: what narrows the lineup, what is on, and the lineup
+              itself. The list sits beside the picture, never under it. */}
+          {/* Stacked as picture, lineup, colophon on a narrow screen; at xl the
+              lineup moves alongside and the colophon tucks under the picture. */}
+          <div
+            className={cn(
+              'mx-auto flex w-full max-w-[2000px] flex-1 flex-col gap-3 p-2.5 sm:p-3',
+              'xl:grid xl:grid-cols-[minmax(0,1fr)_22rem] xl:grid-rows-[minmax(0,1fr)_auto] xl:gap-x-4 xl:gap-y-3 xl:p-4',
+              '2xl:grid-cols-[minmax(0,1fr)_25rem]',
+            )}
+          >
+            <main className="flex min-w-0 flex-1 flex-col gap-3 xl:col-start-1 xl:row-start-1">
+              <div ref={stageRef} className="flex flex-1 scroll-mt-16 flex-col justify-center">
                 <PlayerStage
                   videoRef={playback.videoRef}
                   catalog={catalog}
@@ -334,68 +318,51 @@ export default function App() {
                   actions={playback.actions}
                   renditions={playback.renditions}
                   saved={!!playback.channel && persisted.favorites.includes(playback.channel.i)}
-                  onToggleSave={() =>
-                    playback.channel && store.toggleFavorite(playback.channel.i)
-                  }
+                  onToggleSave={() => playback.channel && store.toggleFavorite(playback.channel.i)}
                   onPickSource={playback.tune}
                   onNextSource={playback.nextSource}
                   onPickRendition={playback.setRendition}
                   onTogglePip={togglePip}
                 />
               </div>
-            </div>
+            </main>
 
-            <section id="channels" aria-label="Channels" className="flex flex-col gap-3">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <p role="status" className="text-sm text-muted-foreground">
-                  {loading
-                    ? 'Loading channels…'
-                    : results.length
-                      ? `${results.length.toLocaleString()} ${results.length === 1 ? 'channel' : 'channels'}`
-                      : 'No matches'}
-                </p>
-
-                <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
-                  <SelectTrigger size="sm" className="w-[9.5rem]" aria-label="Sort channels">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {SORTS.map((s) => (
-                      <SelectItem key={s.value} value={s.value}>
-                        {s.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {loading ? (
-                <GridSkeleton />
-              ) : results.length ? (
-                <ChannelGrid
-                  channels={results}
-                  catalog={catalog}
-                  liveId={playback.channel?.i ?? null}
-                  favorites={persisted.favorites}
-                  shown={shown}
-                  onReveal={() => setShown((n) => Math.min(n + PAGE, results.length))}
-                  onPlay={play}
-                  onToggleSave={(id) => store.toggleFavorite(id)}
-                />
-              ) : (
-                <EmptyState
-                  error={error}
-                  view={view}
-                  query={slowQuery}
-                  onBrowseAll={() => {
-                    resetFilters()
-                    selectView('all')
-                  }}
-                />
+            {/* Stacked below xl, a column beside the picture at xl and up. */}
+            <aside
+              className={cn(
+                'flex min-h-0 flex-col',
+                'h-[clamp(20rem,58svh,36rem)]',
+                'xl:sticky xl:top-[4.5rem] xl:col-start-2 xl:row-span-2 xl:row-start-1',
+                'xl:h-[calc(100svh-5.5rem)]',
               )}
-            </section>
+            >
+              <ChannelList
+                channels={results}
+                catalog={catalog}
+                loading={loading}
+                error={error}
+                view={view}
+                query={query}
+                searchRef={searchRef}
+                onQueryChange={setQuery}
+                sort={sort}
+                liveId={playback.channel?.i ?? null}
+                favorites={persisted.favorites}
+                shown={shown}
+                onReveal={() => setShown((n) => Math.min(n + PAGE, results.length))}
+                onSort={(next) => store.setSort(next)}
+                onPlay={play}
+                onToggleSave={(id) => store.toggleFavorite(id)}
+                onBrowseAll={() => {
+                  resetFilters()
+                  selectView('all')
+                }}
+              />
+            </aside>
 
-            <Footer generated={catalog.index?.generated} />
+            <div className="xl:col-start-1 xl:row-start-2">
+              <Footer generated={catalog.index?.generated} />
+            </div>
           </div>
         </SidebarInset>
       </SidebarProvider>
@@ -423,47 +390,9 @@ export default function App() {
   )
 }
 
-/** An empty screen is an invitation to act, so each case names the next move. */
-function EmptyState({
-  error,
-  view,
-  query,
-  onBrowseAll,
-}: {
-  error: string | null
-  view: LibraryView
-  query: string
-  onBrowseAll: () => void
-}) {
-  const copy = error
-    ? error
-    : view === 'favorites'
-      ? 'Nothing saved yet. Use the heart on any channel to keep it here.'
-      : view === 'recent'
-        ? 'Channels you watch will collect here.'
-        : query
-          ? `Nothing matches “${query}”. Try a shorter word, or clear the filters.`
-          : 'No channels match these filters.'
-
-  return (
-    <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed px-6 py-14 text-center">
-      <p className="max-w-[48ch] text-sm text-muted-foreground">{copy}</p>
-      {!error && view !== 'all' ? (
-        <button
-          type="button"
-          onClick={onBrowseAll}
-          className="text-primary cursor-pointer text-sm underline underline-offset-4"
-        >
-          Browse all channels
-        </button>
-      ) : null}
-    </div>
-  )
-}
-
 function Footer({ generated }: { generated?: string }) {
   return (
-    <footer className="text-muted-foreground mt-2 grid gap-3 border-t pt-5 pb-8 text-xs leading-relaxed sm:grid-cols-2 sm:gap-8">
+    <footer className="text-muted-foreground mt-auto grid gap-2 border-t-2 pt-3 text-[11px] leading-relaxed sm:grid-cols-2 sm:gap-6">
       <p>
         Channel data comes from{' '}
         <a

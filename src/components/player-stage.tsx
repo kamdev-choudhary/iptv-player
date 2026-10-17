@@ -64,13 +64,13 @@ export function PlayerStage({
 
   return (
     <section aria-label="Player" className="flex flex-col gap-2.5">
+      {/* Width is capped by what the viewport can show at 16:9, so the frame
+          fills the column on a tall screen and shrinks on a short one rather
+          than pushing the rest of the page out of sight. */}
       <div
         className={cn(
-          'relative mx-auto w-full overflow-hidden rounded-xl border-2 bg-black',
-          // Nothing picked yet: a slate, not a blank 16:9 that swallows the fold.
-          channel
-            ? 'aspect-video max-w-[calc(58vh*16/9)]'
-            : 'h-[clamp(7rem,17vh,10rem)]',
+          'relative mx-auto aspect-video w-full overflow-hidden rounded-xl border-2 bg-black',
+          'max-w-[min(100%,calc((100svh-14rem)*16/9))]',
           phase === 'live' ? 'border-primary/50' : 'border-border',
         )}
       >
@@ -81,7 +81,7 @@ export function PlayerStage({
           className={cn('size-full bg-black object-contain', phase !== 'live' && 'opacity-0')}
         />
         {phase !== 'live' ? (
-          <TestCard phase={phase} head={head} body={body} actions={actions} compact={!channel} />
+          <TestCard phase={phase} head={head} body={body} actions={actions} />
         ) : null}
       </div>
 
@@ -138,7 +138,7 @@ function NowPlaying({
   const languages = (channel.l || []).slice(0, 2).map((l) => languageName(catalog, l))
 
   return (
-    <div className="mx-auto flex w-full max-w-[calc(58vh*16/9)] flex-wrap items-center gap-x-4 gap-y-3 rounded-xl border-2 bg-card px-3 py-2.5">
+    <div className="bg-card mx-auto flex w-full max-w-[min(100%,calc((100svh-14rem)*16/9))] flex-wrap items-center gap-x-4 gap-y-2.5 rounded-xl border-2 px-3 py-2.5">
       <ChannelLogo channel={channel} className="size-11 shrink-0 rounded-md p-1.5" />
 
       <div className="min-w-0 flex-1 basis-48">
