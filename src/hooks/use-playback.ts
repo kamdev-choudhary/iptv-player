@@ -149,6 +149,7 @@ export function usePlayback({ catalog, onNeedProxy }: PlaybackOptions) {
       head: info.head,
       body: info.body + tail,
       actions,
+      renditions: [],
     }))
   }
 

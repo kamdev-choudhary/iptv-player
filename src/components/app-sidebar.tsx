@@ -271,7 +271,9 @@ export function AppSidebar({
           className="justify-start"
         >
           <RotateCcw className="size-4" />
-          {activeFilters ? `Clear ${activeFilters} filters` : 'No filters set'}
+          {activeFilters
+            ? `Clear ${activeFilters} ${activeFilters === 1 ? 'filter' : 'filters'}`
+            : 'No filters set'}
         </Button>
       </SidebarFooter>
     </Sidebar>
