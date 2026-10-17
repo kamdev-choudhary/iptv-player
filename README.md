@@ -2,8 +2,9 @@
 
 A browser IPTV player for the publicly listed channels in the
 [iptv-org](https://github.com/iptv-org/iptv) database — search roughly 11,000 channels
-from 178 countries, and watch the ones your browser is able to reach. Static site, no
-backend, no tracking, deployed to GitHub Pages.
+from 178 countries, and watch the ones your browser is able to reach. React, Vite,
+Tailwind and [shadcn/ui](https://ui.shadcn.com), built to a static site — no backend, no
+tracking, deployed to GitHub Pages.
 
 **Live: https://kamdev-choudhary.github.io/iptv-player/**
 
@@ -17,8 +18,15 @@ backend, no tracking, deployed to GitHub Pages.
 - **Your own playlists.** Load an M3U file and it browses and plays like the built-in list.
   Playlists, favourites and history stay in `localStorage`.
 - **Shareable links.** `#c=<channel-id>` opens straight into a channel.
+- **Remembers how you left it.** Country, language, quality, categories and sort order come
+  back on the next visit, alongside favourites, history and playlists.
 
-Keyboard: `/` search · `space` play/pause · `m` mute · `f` fullscreen · `n` next source.
+Three panes: filters on the left, the picture in the middle, the lineup on the right — so
+choosing what to watch never costs you sight of what you are watching. Below 1280px they
+stack.
+
+Keyboard: `/` search · `⌘K` jump to a channel · `space` play/pause · `m` mute ·
+`f` fullscreen · `n` next source.
 
 ## The honest part: why streams fail
 
@@ -48,30 +56,48 @@ limited or hostile often enough not to rely on.
 
 ## Running it locally
 
-Any static file server works. Over `http://` rather than `https://`, `http://` sources play
-too, which is a meaningful chunk of the list.
+Served over `http://` rather than `https://`, `http://` sources play too, which is a
+meaningful chunk of the list.
 
 ```sh
-node scripts/build-data.mjs   # refresh data/channels.json and data/sources.json
-python3 -m http.server 8777
+npm install
+npm run data     # refresh public/data/channels.json and public/data/sources.json
+npm run dev      # vite dev server
 ```
+
+`npm run build` writes the static site to `dist/`, and `npm run preview` serves it.
+
+### Layout
+
+```
+src/
+  lib/        store, M3U parser, hls.js wrapper, search and filter — no React
+  hooks/      catalog loading, playback and failover, persisted state
+  components/ the interface; components/ui holds the shadcn primitives
+scripts/      build-data.mjs, which writes public/data
+```
+
+Everything in `src/lib` is framework-free and testable on its own; `src/lib/player.ts`
+turns the many ways a public stream can fail into one named reason, which is what the
+test card reads out.
 
 ## How the data is built
 
 `scripts/build-data.mjs` pulls the eight iptv-org API endpoints (~25 MB) and merges them
 into two files the browser can afford to load:
 
-- `data/channels.json` — one compact record per channel with a logo, country, categories,
-  languages, best available resolution and source count. Renders the grid on its own.
-- `data/sources.json` — channel id to its list of stream URLs. Fetched in parallel, needed
-  only once you press play.
+- `public/data/channels.json` — one compact record per channel with a logo, country,
+  categories, languages, best available resolution and source count. Renders the lineup on
+  its own.
+- `public/data/sources.json` — channel id to its list of stream URLs. Fetched in parallel,
+  needed only once you press play.
 
 Together about 0.9 MB gzipped, down from 25 MB. Closed, NSFW and DMCA-blocklisted channels
 are dropped; sources are ordered so the ones a browser can actually play come first.
 
-A GitHub Actions workflow rebuilds and redeploys daily at 05:30 UTC, so the site tracks
-upstream without anyone touching it. The committed `data/` files are a snapshot so a fresh
-clone works offline.
+A GitHub Actions workflow refreshes the data, builds the site and redeploys daily at 05:30
+UTC, so it tracks upstream without anyone touching it. The committed `public/data/` files
+are a snapshot so a fresh clone works offline.
 
 ## Deploying your own
 
@@ -88,4 +114,6 @@ whoever operates it. Channels on the iptv-org DMCA blocklist are excluded from t
 ## Credits
 
 Channel data from [iptv-org](https://github.com/iptv-org/api) (public domain). Playback by
-[hls.js](https://github.com/video-dev/hls.js) (Apache 2.0).
+[hls.js](https://github.com/video-dev/hls.js) (Apache 2.0). Interface built on
+[shadcn/ui](https://ui.shadcn.com) and [Radix](https://www.radix-ui.com) (MIT). The palette
+is SMPTE colour bars — the card a channel shows when it has nothing to broadcast.

@@ -197,7 +197,13 @@ function NowPlaying({
         ) : null}
 
         {heights.length > 1 ? (
-          <Select defaultValue="-1" onValueChange={(v) => onPickRendition(Number(v))}>
+          // Keyed on the source, so a new stream's picker starts at Auto rather
+          // than showing a height carried over from the last one.
+          <Select
+            key={`${channel.i}:${index}`}
+            defaultValue="-1"
+            onValueChange={(v) => onPickRendition(Number(v))}
+          >
             <SelectTrigger size="sm" className="readout w-[5.5rem]" aria-label="Resolution">
               <SelectValue />
             </SelectTrigger>
