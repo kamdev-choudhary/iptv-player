@@ -1,0 +1,251 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Tuner's palette comes from SMPTE colour bars — the test card a channel shows
+ * when it has nothing to broadcast. The seven bars double as the identity and
+ * as the per-channel accent, so a wall of logos still reads as one system.
+ */
+:root {
+  --bar-grey: #8b919d;
+  --bar-yellow: #c4a714;
+  --bar-cyan: #0f8fab;
+  --bar-green: #1f9d5c;
+  --bar-magenta: #b23a9c;
+  --bar-red: #cf3b31;
+  --bar-blue: #3c5bd0;
+
+  --radius: 0.75rem;
+
+  --background: #eef0f4;
+  --foreground: #11151d;
+  --card: #ffffff;
+  --card-foreground: #11151d;
+  --popover: #ffffff;
+  --popover-foreground: #11151d;
+  --primary: #0b7f99;
+  --primary-foreground: #f3fbfd;
+  --secondary: #e9ebef;
+  --secondary-foreground: #1b212c;
+  --muted: #eceef2;
+  --muted-foreground: #5c6678;
+  --accent: #e4e7ec;
+  --accent-foreground: #11151d;
+  --destructive: #c4382e;
+  --destructive-foreground: #fff5f4;
+  --border: #c9ced8;
+  --input: #c3c9d4;
+  --ring: #0b7f99;
+
+  --sidebar: #f0f2f5;
+  --sidebar-foreground: #11151d;
+  --sidebar-primary: #0b7f99;
+  --sidebar-primary-foreground: #f3fbfd;
+  --sidebar-accent: #e4e7ec;
+  --sidebar-accent-foreground: #11151d;
+  --sidebar-border: #c9ced8;
+  --sidebar-ring: #0b7f99;
+
+  /* Stream state, named for what it means rather than for its hue. */
+  --signal: #0b7f99;
+  --keep: #b23a9c;
+  --dead: #cf3b31;
+}
+
+.dark {
+  --bar-grey: #b9bec9;
+  --bar-yellow: #e8d44d;
+  --bar-cyan: #4dc9e8;
+  --bar-green: #5bd08a;
+  --bar-magenta: #d45bc0;
+  --bar-red: #e8574d;
+  --bar-blue: #5b7be8;
+
+  --background: #080b11;
+  --foreground: #eef2f9;
+  --card: #111620;
+  --card-foreground: #eef2f9;
+  --popover: #161c28;
+  --popover-foreground: #eef2f9;
+  --primary: #46d3f0;
+  --primary-foreground: #04212a;
+  --secondary: #1a202c;
+  --secondary-foreground: #eef2f9;
+  --muted: #161c28;
+  --muted-foreground: #97a3bb;
+  --accent: #252d3f;
+  --accent-foreground: #eef2f9;
+  --destructive: #e8574d;
+  --destructive-foreground: #1a0806;
+  /* Darker than the surfaces it separates, so panels read as a groove
+     between them rather than as a glow around them. */
+  --border: #05070c;
+  --input: #272f3e;
+  --ring: #46d3f0;
+
+  --sidebar: #0b0e15;
+  --sidebar-foreground: #eef2f9;
+  --sidebar-primary: #46d3f0;
+  --sidebar-primary-foreground: #04212a;
+  --sidebar-accent: #1d2433;
+  --sidebar-accent-foreground: #eef2f9;
+  --sidebar-border: #05070c;
+  --sidebar-ring: #46d3f0;
+
+  --signal: #46d3f0;
+  --keep: #d45bc0;
+  --dead: #e8574d;
+}
+
+@theme inline {
+  --font-sans: 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-bar-grey: var(--bar-grey);
+  --color-bar-yellow: var(--bar-yellow);
+  --color-bar-cyan: var(--bar-cyan);
+  --color-bar-green: var(--bar-green);
+  --color-bar-magenta: var(--bar-magenta);
+  --color-bar-red: var(--bar-red);
+  --color-bar-blue: var(--bar-blue);
+
+  --color-signal: var(--signal);
+  --color-keep: var(--keep);
+  --color-dead: var(--dead);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply bg-background;
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    /* Depth comes from the surface ramp (ground -> card -> raised), not from
+       decorative washes or a border on every panel. */
+    @apply bg-background text-foreground font-sans antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Archivo is variable-width. Headings run slightly narrow; the wordmark and
+     the now-playing name run wide, the way a station ident is set. */
+  h1, h2, h3 {
+    font-stretch: 96%;
+    letter-spacing: -0.015em;
+  }
+}
+
+@layer components {
+  /* Set wide, like a station ident on a lower third. */
+  .ident {
+    font-stretch: 118%;
+    letter-spacing: -0.01em;
+  }
+
+  /* An engineering readout: resolution, bitrate, source n of m. Mono belongs
+     on numbers here because the gear this imitates reads out in mono. */
+  .readout {
+    @apply font-mono text-[11px] leading-none tabular-nums;
+    letter-spacing: 0.01em;
+  }
+
+  /* Faint scanlines, over the test card only. */
+  .scanlines::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 0.07) 0 1px,
+      transparent 1px 4px
+    );
+  }
+
+  /* A frame rolling past, while a source is being reached. */
+  .rolling {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      color-mix(in oklab, var(--signal) 22%, transparent) 48%,
+      color-mix(in oklab, var(--signal) 6%, transparent) 52%,
+      transparent 100%
+    );
+    background-size: 100% 42%;
+    background-repeat: no-repeat;
+    animation: roll 2.6s linear infinite;
+  }
+
+  @keyframes roll {
+    from { background-position: 0 -45%; }
+    to { background-position: 0 145%; }
+  }
+}
+
+@layer utilities {
+  /* Every channel gets one of the seven bars as its accent; components set
+     --hue and read it back through these. */
+  .hue-bg { background-color: color-mix(in oklab, var(--hue) 14%, transparent); }
+  .hue-text { color: var(--hue); }
+  .hue-ring { box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--hue) 30%, transparent); }
+
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+}
+
+/* The grid can hold 11k tiles; keeping offscreen rows unpainted is the
+   difference between a smooth scroll and a stuttering one. */
+.channel-tile {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 124px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

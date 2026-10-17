@@ -10,7 +10,7 @@ import { writeFile, mkdir } from 'node:fs/promises'
 import { gzipSync } from 'node:zlib'
 
 const API = 'https://iptv-org.github.io/api'
-const OUT = new URL('../data/', import.meta.url)
+const OUT = new URL('../public/data/', import.meta.url)
 
 const ENDPOINTS = ['channels', 'streams', 'feeds', 'logos', 'categories', 'countries', 'languages', 'blocklist']
 
