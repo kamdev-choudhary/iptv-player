@@ -4,7 +4,7 @@
  * An external store rather than React state: the player, the keyboard
  * shortcuts and the grid all read it, and it has to survive a reload.
  */
-import type { Channel } from './types'
+import { BLANK_FILTERS, type Channel, type Filters, type SortKey } from './types'
 
 const KEY = 'tuner.v2'
 const LEGACY_KEY = 'tuner.v1'
@@ -26,6 +26,9 @@ export interface Persisted {
   recent: string[]
   playlists: Record<string, Playlist>
   settings: Settings
+  /** How the wall was last narrowed down, so it comes back as you left it. */
+  filters: Filters
+  sort: SortKey
 }
 
 const blank = (): Persisted => ({
@@ -33,6 +36,9 @@ const blank = (): Persisted => ({
   recent: [],
   playlists: {},
   settings: { proxy: '', autoProxy: false, autoNext: true },
+  // An https page cannot load a plain http stream, so that filter starts on.
+  filters: { ...BLANK_FILTERS, hideInsecure: location.protocol === 'https:' },
+  sort: 'name',
 })
 
 function read(): Persisted {
@@ -46,6 +52,7 @@ function read(): Persisted {
         ...base,
         ...parsed,
         settings: { ...base.settings, ...parsed.settings },
+        filters: { ...base.filters, ...parsed.filters },
       }
     } catch {
       // Private mode, or a corrupted entry — carry on without memory.
@@ -82,6 +89,30 @@ export const store = {
 
   setSettings(patch: Partial<Settings>) {
     state.settings = { ...state.settings, ...patch }
+    commit()
+  },
+
+  get filters() {
+    return state.filters
+  },
+
+  setFilters(patch: Partial<Filters>) {
+    state.filters = { ...state.filters, ...patch }
+    commit()
+  },
+
+  resetFilters() {
+    // The https filter is about what this page can load, not a preference.
+    state.filters = { ...BLANK_FILTERS, hideInsecure: state.filters.hideInsecure }
+    commit()
+  },
+
+  get sort() {
+    return state.sort
+  },
+
+  setSort(sort: SortKey) {
+    state.sort = sort
     commit()
   },
 
