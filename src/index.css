@@ -51,6 +51,7 @@
   /* Stream state, named for what it means rather than for its hue. */
   --signal: #0b7f99;
   --keep: #b23a9c;
+  --warn: #8a6d05;
   --dead: #cf3b31;
 }
 
@@ -96,6 +97,7 @@
 
   --signal: #46d3f0;
   --keep: #d45bc0;
+  --warn: #e8d44d;
   --dead: #e8574d;
 }
 
@@ -147,6 +149,7 @@
 
   --color-signal: var(--signal);
   --color-keep: var(--keep);
+  --color-warn: var(--warn);
   --color-dead: var(--dead);
 }
 

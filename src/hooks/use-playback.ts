@@ -38,9 +38,16 @@ const IDLE: Playback = {
 /** A proxy only helps where the browser, not the stream, is the obstacle. */
 const PROXY_HELPS: Reason[] = ['cors', 'insecure', 'network', 'timeout', 'forbidden']
 
+/**
+ * Retrying these changes nothing: the obstacle is a fixed property of the
+ * source or the browser, not a server having a bad minute. Offering a Retry
+ * button for them is a dead end dressed up as a way out.
+ */
+const DETERMINISTIC: Reason[] = ['insecure', 'dash', 'headers', 'unsupported']
+
 export interface PlaybackOptions {
   catalog: Catalog
-  /** Opens the settings dialog, offered when a CORS failure has no proxy set. */
+  /** Opens the settings dialog, offered when a proxy would be the way through. */
   onNeedProxy: () => void
 }
 
@@ -133,10 +140,14 @@ export function usePlayback({ catalog, onNeedProxy }: PlaybackOptions) {
         run: () => void tuneRef.current(index, settings.proxy),
       })
     }
-    if (!settings.proxy && reason === 'cors') {
+    // Every http-only source lands here, which is a fifth of the list — the
+    // proxy is the only way through, so say so rather than only for CORS.
+    if (!settings.proxy && proxyHelps) {
       actions.push({ label: 'Set up a proxy', run: onNeedProxy })
     }
-    actions.push({ label: 'Retry', run: () => void tuneRef.current(index, usedProxy) })
+    if (!DETERMINISTIC.includes(reason)) {
+      actions.push({ label: 'Retry', run: () => void tuneRef.current(index, usedProxy) })
+    }
 
     const tail =
       remaining > 0

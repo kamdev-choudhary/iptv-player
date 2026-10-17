@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Heart } from 'lucide-react'
+import { Heart, MonitorX } from 'lucide-react'
 import { ChannelLogo } from '@/components/channel-logo'
 import { cn } from '@/lib/utils'
 import { countryName, flagOf, type Catalog } from '@/lib/channels'
@@ -29,6 +29,8 @@ export const ChannelRow = memo(function ChannelRow({
 }: ChannelRowProps) {
   const flag = flagOf(catalog, channel.c)
   const country = countryName(catalog, channel.c)
+  // Every source is http, DASH, or needs headers a browser may not send.
+  const unplayable = channel.x === 1
 
   return (
     <li
@@ -48,7 +50,7 @@ export const ChannelRow = memo(function ChannelRow({
       >
         <ChannelLogo
           channel={channel}
-          className="size-10 shrink-0 rounded-md p-1"
+          className={cn('size-10 shrink-0 rounded-md p-1', unplayable && 'opacity-50')}
         />
 
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -59,17 +61,30 @@ export const ChannelRow = memo(function ChannelRow({
                 className="size-1.5 shrink-0 animate-pulse rounded-full bg-[var(--bar-red)]"
               />
             ) : null}
-            <span className="truncate text-[13px] leading-tight font-medium" title={channel.n}>
+            <span
+              className={cn(
+                'truncate text-[13px] leading-tight font-medium',
+                unplayable && 'text-muted-foreground',
+              )}
+              title={channel.n}
+            >
               {channel.n}
             </span>
           </span>
           <span className="text-muted-foreground flex min-w-0 items-center gap-1 text-[11px] leading-tight">
-            {flag ? (
+            {unplayable ? (
+              <MonitorX
+                className="text-warn size-3 shrink-0"
+                aria-hidden
+              />
+            ) : flag ? (
               <span aria-hidden className="shrink-0 leading-none">
                 {flag}
               </span>
             ) : null}
-            <span className="truncate">{country || 'Unlisted'}</span>
+            <span className="truncate">
+              {unplayable ? 'No source a browser can play' : country || 'Unlisted'}
+            </span>
           </span>
         </span>
 
