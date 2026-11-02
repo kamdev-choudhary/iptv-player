@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { channelId, healthReason, isoDate, sourceId, streamUrl } from './primitives.ts'
+import { channelId, healthReason, isoDate, streamUrl } from './primitives.ts'
 import { apiSource, channelDetail } from './catalog.ts'
 
 /**

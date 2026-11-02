@@ -1,0 +1,124 @@
+/**
+ * Tuner's design tokens.
+ *
+ * The reference is a master control room: a wall of feeds and a panel that
+ * tells an engineer which ones are healthy. That is literally what this
+ * application now is, because the server probes every source and reports
+ * latency, resolution and liveness — so the interface is built as an
+ * instrument, with real readouts, rather than as a media storefront.
+ *
+ * Dark only, and deliberately. This is a console for watching a picture in a
+ * dim room; a light equipment panel would be a worse version of both jobs.
+ */
+
+@theme {
+  /* Anodised rack graphite — cool and slightly blue, not a tinted black. */
+  --color-rack: #16191d;
+  --color-panel: #1e2227;
+  --color-panel-lift: #23282e;
+  --color-rail: #2a2f36;
+  --color-etch: #8c949e;
+  --color-readout: #e8eaed;
+
+  /* Signal states, borrowed from tally lights. These are semantic: the same
+     hue means the same thing in the lineup, the source strip and the filters. */
+  --color-live: #46c27b;
+  --color-hold: #d9a33a;
+  --color-fault: #e0584f;
+  --color-routed: #9d86e0;
+
+  /* The one accent: cyan, the first SMPTE bar, meaning signal present.
+     Focus rings, the tuned channel, the wordmark. Nothing else. */
+  --color-signal: #55d6e3;
+
+  --font-sans: 'Chivo', ui-sans-serif, system-ui, sans-serif;
+  /* Numerals only — latency, resolution, counts. An instrument readout, not a
+     styling device for labels. */
+  --font-mono: 'Chivo Mono', ui-monospace, 'SF Mono', monospace;
+
+  /* 1.26, give or take, from 15px body. */
+  --text-micro: 0.6875rem;
+  --text-small: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-section: 1.1875rem;
+  --text-display: 1.5625rem;
+  --text-slate: 2rem;
+
+  /* Panels and rows are flush and ruled. Only things you press are rounded. */
+  --radius-control: 2px;
+  --radius-pill: 999px;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-rack);
+    color: var(--color-readout);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.45;
+    font-feature-settings: 'cv05' 1;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Digits line up in a column, which is the whole reason to use a mono. */
+  .tabular {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  /* One focus treatment everywhere, and it is always visible. */
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 1px;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-signal) 35%, transparent);
+  }
+
+  /* The scrollbar is part of a dense panel, so it is styled to belong to it. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-rail) transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/**
+ * The one piece of non-user-triggered motion in the application: a tally dot
+ * flashes once at the moment a source comes good. It marks a state change the
+ * operator did not cause, which is the only thing worth animating unasked.
+ */
+@keyframes tally-strike {
+  0% {
+    box-shadow: 0 0 0 0 currentColor;
+    opacity: 0.4;
+  }
+  60% {
+    box-shadow: 0 0 0 5px transparent;
+    opacity: 1;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    opacity: 1;
+  }
+}

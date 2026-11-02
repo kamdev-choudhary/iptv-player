@@ -1,4 +1,4 @@
-import { sql, type Expression, type SqlBool } from 'kysely'
+import { sql, type RawBuilder, type SqlBool } from 'kysely'
 import type {
   ApiChannel,
   ApiSource,
@@ -132,7 +132,7 @@ export async function listChannels(query: ChannelQuery): Promise<Page<ApiChannel
    * score would rank marginally better but cannot be paged through: buckets
    * are integers, so they fit the cursor like any other sort key.
    */
-  const rank: Expression<number> = searching
+  const rank: RawBuilder<number> = searching
     ? sql<number>`
         case
           when lower(${sql.ref('name')}) like ${`${escapeLike(phrase)}%`} then 0
@@ -145,7 +145,7 @@ export async function listChannels(query: ChannelQuery): Promise<Page<ApiChannel
   const sortColumn = query.sort === 'name' ? null : SORT_COLUMN[query.sort]
   // Relevance wins over the requested sort while a query is active; otherwise
   // the best match for "bbc" could sit a thousand rows down a name sort.
-  const key: Expression<number> = searching ? rank : sortColumn ? sql.ref(sortColumn) : sql<number>`0`
+  const key: RawBuilder<number> = searching ? rank : sortColumn ? sql.ref(sortColumn) : sql<number>`0`
   const descending = !searching && sortColumn !== null
 
   let rows = base.select([rank.as('rank')])
@@ -344,7 +344,7 @@ async function facetsFor(kind: 'country' | 'category' | 'language'): Promise<Fac
       extra: names.get(r.code)?.extra ?? null,
       count: r.n,
     }))
-    .sort((a, b) => a.name.localeCompare(b.name, 'en'))
+    .toSorted((a, b) => a.name.localeCompare(b.name, 'en'))
 }
 
 export async function facets(): Promise<Facets> {

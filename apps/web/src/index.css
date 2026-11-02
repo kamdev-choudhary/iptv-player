@@ -1,0 +1,16 @@
+@import 'tailwindcss';
+@import '@tuner/ui/tokens.css';
+
+/* Tailwind 4 finds classes by scanning source; the UI package lives outside
+   this app's tree, so it has to be pointed at explicitly. */
+@source '../../../packages/ui/src';
+
+@layer base {
+  /* The player fills its stage; letterboxing is the broadcaster's business. */
+  video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: #000;
+  }
+}

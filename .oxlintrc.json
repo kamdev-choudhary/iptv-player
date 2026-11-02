@@ -1,0 +1,93 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "plugins": [
+    "import",
+    "typescript",
+    "unicorn",
+    "promise",
+    "react",
+    "jsx-a11y"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "warn",
+    "pedantic": "off",
+    "style": "off"
+  },
+  "env": {
+    "builtin": true,
+    "es2024": true
+  },
+  "rules": {
+    "no-console": "off",
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "typescript/no-explicit-any": "error",
+    "typescript/consistent-type-imports": "error",
+    "import/no-cycle": "error",
+    "import/no-duplicates": "error",
+    "unicorn/filename-case": [
+      "error",
+      {
+        "cases": {
+          "kebabCase": true,
+          "pascalCase": true
+        }
+      }
+    ],
+    "no-await-in-loop": "off",
+    "react/react-in-jsx-scope": "off",
+    "import/no-unassigned-import": "off",
+    "jsx-a11y/media-has-caption": "off",
+    "jsx-a11y/prefer-tag-over-role": "error"
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.test.ts",
+        "**/*.test.tsx"
+      ],
+      "rules": {
+        "typescript/no-explicit-any": "off"
+      }
+    },
+    {
+      "files": [
+        "apps/api/**"
+      ],
+      "env": {
+        "node": true
+      }
+    },
+    {
+      "files": [
+        "apps/web/**",
+        "packages/ui/**"
+      ],
+      "env": {
+        "browser": true
+      }
+    },
+    {
+      "files": [
+        "packages/ui/src/dialog.tsx"
+      ],
+      "rules": {
+        "jsx-a11y/click-events-have-key-events": "off",
+        "jsx-a11y/no-noninteractive-element-interactions": "off"
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "dist",
+    "node_modules",
+    ".turbo",
+    "coverage"
+  ]
+}

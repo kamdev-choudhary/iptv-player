@@ -45,7 +45,16 @@ const schema = z.object({
   WEB_ROOT: z.string().default('../web/dist'),
 })
 
-const parsed = schema.safeParse(process.env)
+/**
+ * In a `.env` file, a variable left blank means "I am not using this" — the
+ * commented-out `STREAM_TOKEN=` in `.env.example` is the obvious case. Treating
+ * an empty string as a value would fail validation on a file that is correct.
+ */
+const present = Object.fromEntries(
+  Object.entries(process.env).filter(([, value]) => value !== undefined && value !== ''),
+)
+
+const parsed = schema.safeParse(present)
 
 if (!parsed.success) {
   const issues = parsed.error.issues

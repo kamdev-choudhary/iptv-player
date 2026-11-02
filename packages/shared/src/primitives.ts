@@ -101,6 +101,14 @@ export const streamUrl = z
 
 export const isoDate = z.iso.datetime({ offset: true })
 
+/**
+ * A querystring field that may repeat. Fastify hands over a bare string for
+ * one occurrence and an array for several, so both are normalised to an array.
+ */
+export function arrayable<T extends z.ZodType>(item: T) {
+  return z.union([item, z.array(item)]).transform((v) => (Array.isArray(v) ? v : [v]))
+}
+
 /** A paginated response. `nextCursor` is opaque — pass it back verbatim. */
 export function page<T extends z.ZodType>(item: T) {
   return z.object({

@@ -1,0 +1,28 @@
+# TLS and the security headers that cannot be set in the application.
+#
+# The API deliberately ships no Content-Security-Policy: the player loads logos
+# from hundreds of broadcaster domains and video from as many more, so a useful
+# policy can only be written where the deployment's own origin is known — here.
+
+{$TUNER_DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		# `media-src *` is the point of the whole application; `connect-src *`
+		# is what lets the player try a broadcaster directly before falling
+		# back to the proxy, which is what keeps bandwidth off this box.
+		Content-Security-Policy "default-src 'self'; img-src 'self' data: https: http:; media-src 'self' blob: https: http:; connect-src 'self' https: http:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'wasm-unsafe-eval'; frame-ancestors 'none'"
+	}
+
+	# Segments stream for as long as the viewer watches, so no response buffering
+	# and no read timeout on the proxy paths.
+	reverse_proxy api:8080 {
+		flush_interval -1
+		transport http {
+			response_header_timeout 30s
+		}
+	}
+}

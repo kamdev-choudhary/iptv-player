@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import {
+  arrayable,
   channelId,
   healthReason,
   isoDate,
@@ -88,7 +89,7 @@ export const channelQuery = z.object({
   country: z.string().length(2).toUpperCase().optional(),
   language: z.string().min(2).max(3).optional(),
   /** Repeatable; a channel matches if it carries any of them. */
-  category: z.array(z.string().max(64)).max(16).optional(),
+  category: arrayable(z.string().max(64)).optional(),
   minHeight: z.coerce.number().int().min(0).max(4320).optional(),
   /** Only channels with at least one source whose last probe passed. */
   liveOnly: z.stringbool().optional(),

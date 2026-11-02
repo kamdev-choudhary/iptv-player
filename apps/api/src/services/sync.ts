@@ -16,17 +16,6 @@ import { refreshChannelStats, refreshSearchText } from './stats.ts'
  * reason the catalog can be edited at runtime.
  */
 
-const ENDPOINTS = [
-  'channels',
-  'streams',
-  'feeds',
-  'logos',
-  'categories',
-  'countries',
-  'languages',
-  'blocklist',
-] as const
-
 /**
  * Upstream shapes are validated per record and bad ones are skipped. A strict
  * whole-payload parse would mean one malformed row of sixty thousand aborts
@@ -110,18 +99,19 @@ async function fetchEndpoint<T extends z.ZodType>(name: string, schema: T, skipp
   return out
 }
 
+/** An SVG logo sorts after a raster one: more of them fail to render. */
+const rasterFirst = (format?: string | null) => (format?.toUpperCase() === 'SVG' ? 1 : 0)
+
 /** Prefer the logo most likely to render: in use, raster over SVG, then widest. */
 function pickLogo(logos: z.infer<typeof upstreamLogo>[]) {
   return (
-    logos
-      .slice()
-      .sort((a, b) => {
-        if (Boolean(a.in_use) !== Boolean(b.in_use)) return a.in_use ? -1 : 1
-        const raster = (f?: string | null) => (f?.toUpperCase() === 'SVG' ? 1 : 0)
-        if (raster(a.format) !== raster(b.format)) return raster(a.format) - raster(b.format)
-        return (b.width ?? 0) - (a.width ?? 0)
-      })
-      .at(0)?.url ?? null
+    logos.toSorted((a, b) => {
+      if (Boolean(a.in_use) !== Boolean(b.in_use)) return a.in_use ? -1 : 1
+      if (rasterFirst(a.format) !== rasterFirst(b.format)) {
+        return rasterFirst(a.format) - rasterFirst(b.format)
+      }
+      return (b.width ?? 0) - (a.width ?? 0)
+    })[0]?.url ?? null
   )
 }
 
@@ -214,8 +204,14 @@ export async function runSync(log: (m: string) => void = () => {}): Promise<Sync
   const channelRows: ChannelUpsert[] = []
   const sourceRows: SourceUpsert[] = []
 
-  const sourceFrom = (channelId: string, s: z.infer<typeof upstreamStream>, feedName: string | null): SourceUpsert => {
+  const sourceFrom = (
+    channelId: string,
+    s: z.infer<typeof upstreamStream>,
+    feedName: string | null,
+  ): SourceUpsert => {
     const flags = flagsFor(s.url, s.user_agent, s.referrer)
+    // Spelled out rather than spread: `flagsFor` returns camelCase names, and
+    // spreading them would put columns the table does not have into the insert.
     return {
       channel_id: channelId,
       url: s.url,
@@ -225,11 +221,11 @@ export async function runSync(log: (m: string) => void = () => {}): Promise<Sync
       labels: s.labels ?? [],
       user_agent: s.user_agent ?? null,
       referrer: s.referrer ?? null,
-      ...flags,
+      insecure: flags.insecure,
       needs_headers: flags.needsHeaders,
       is_dash: flags.isDash,
       origin: 'iptv-org',
-    } as SourceUpsert
+    }
   }
 
   for (const ch of channels) {
@@ -408,7 +404,7 @@ async function upsertSources(trx: Trx, rows: SourceUpsert[]) {
       .values(batch)
       .onConflict((oc) =>
         oc
-          .columns(['channel_id', 'url'])
+          .columns(['channel_id', 'url_key'])
           .doUpdateSet((eb) => ({
             quality: eb.ref('excluded.quality'),
             height: eb.ref('excluded.height'),
@@ -456,18 +452,21 @@ async function retireMissingChannels(trx: Trx, seen: readonly string[]) {
 
 /** Sources upstream dropped are disabled, for the same reason. */
 async function disableMissingSources(trx: Trx, seen: readonly SourceUpsert[]) {
+  // Keyed on the same digest the real table is: a URL long enough to overflow
+  // a btree tuple would break the index here for exactly the same reason.
   await sql`
-    create temporary table sync_sources (channel_id text, url text) on commit drop
+    create temporary table sync_sources (channel_id text, url_key text) on commit drop
   `.execute(trx)
 
   for (const batch of chunks(seen, 5000)) {
     await sql`
-      insert into sync_sources (channel_id, url)
-      select * from unnest(${sql.val(batch.map((s) => s.channel_id))}::text[],
-                           ${sql.val(batch.map((s) => s.url))}::text[])
+      insert into sync_sources (channel_id, url_key)
+      select channel_id, md5(url)
+      from unnest(${sql.val(batch.map((s) => s.channel_id))}::text[],
+                  ${sql.val(batch.map((s) => s.url))}::text[]) as incoming(channel_id, url)
     `.execute(trx)
   }
-  await sql`create index on sync_sources (channel_id, url)`.execute(trx)
+  await sql`create index on sync_sources (channel_id, url_key)`.execute(trx)
 
   const result = await sql<{ id: number }>`
     update sources s set enabled = false
@@ -475,7 +474,8 @@ async function disableMissingSources(trx: Trx, seen: readonly SourceUpsert[]) {
       and not s.locked
       and s.enabled
       and not exists (
-        select 1 from sync_sources t where t.channel_id = s.channel_id and t.url = s.url
+        select 1 from sync_sources t
+        where t.channel_id = s.channel_id and t.url_key = s.url_key
       )
     returning s.id
   `.execute(trx)

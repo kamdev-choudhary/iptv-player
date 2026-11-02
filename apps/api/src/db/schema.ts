@@ -39,14 +39,16 @@ export interface ChannelTable {
   best_height: Generated<number>
   /** An operator has edited this row; upstream sync leaves it alone. */
   locked: Generated<boolean>
-  created_at: Generated<Timestamp>
-  updated_at: Generated<Timestamp>
+  created_at: Timestamp
+  updated_at: Timestamp
 }
 
 export interface SourceTable {
   id: Generated<number>
   channel_id: string
   url: string
+  /** `md5(url)`, written by the database. Carries the uniqueness constraint. */
+  url_key: Generated<string>
   quality: string | null
   /** Height parsed from `quality`; the probed height lives in source_health. */
   height: number | null
@@ -63,8 +65,8 @@ export interface SourceTable {
   origin: Origin
   enabled: Generated<boolean>
   locked: Generated<boolean>
-  created_at: Generated<Timestamp>
-  updated_at: Generated<Timestamp>
+  created_at: Timestamp
+  updated_at: Timestamp
 }
 
 export interface SourceHealthTable {
@@ -94,7 +96,7 @@ export interface JobRunTable {
   id: Generated<number>
   job: string
   status: 'running' | 'ok' | 'failed'
-  started_at: Generated<Timestamp>
+  started_at: Timestamp
   finished_at: Timestamp | null
   stats: JSONColumnType<Record<string, number> | null> | null
   error: string | null

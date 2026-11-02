@@ -1,4 +1,4 @@
-import { Migrator, type MigrationResultSet } from 'kysely'
+import { Migrator, type MigrationResultSet } from 'kysely/migration'
 import { closeDb, db } from './index.ts'
 import { migrationProvider } from './migrations/index.ts'
 

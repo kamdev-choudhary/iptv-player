@@ -59,6 +59,12 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       c.notNull().references('channels.id').onDelete('cascade'),
     )
     .addColumn('url', 'text', (c) => c.notNull())
+    // Signed CDN URLs run long enough that (channel_id, url) overflows a btree
+    // index tuple, so uniqueness is enforced on a digest instead. Generated and
+    // stored, so it cannot drift from the URL it describes.
+    .addColumn('url_key', 'text', (c) =>
+      c.notNull().generatedAlwaysAs(sql`md5(url)`).stored(),
+    )
     .addColumn('quality', 'text')
     .addColumn('height', 'integer')
     .addColumn('feed', 'text')
@@ -73,7 +79,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .addColumn('locked', 'boolean', (c) => c.notNull().defaultTo(false))
     .addColumn('created_at', 'timestamptz', (c) => c.notNull().defaultTo(sql`now()`))
     .addColumn('updated_at', 'timestamptz', (c) => c.notNull().defaultTo(sql`now()`))
-    .addUniqueConstraint('sources_channel_url_key', ['channel_id', 'url'])
+    .addUniqueConstraint('sources_channel_url_key', ['channel_id', 'url_key'])
     .addCheckConstraint('sources_origin_known', sql`origin in ('iptv-org', 'manual', 'm3u')`)
     .execute()
 

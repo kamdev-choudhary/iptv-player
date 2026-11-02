@@ -1,0 +1,27 @@
+{
+  "name": "@tuner/ui",
+  "private": true,
+  "version": "3.0.0",
+  "type": "module",
+  "description": "Tuner's control-panel primitives and design tokens.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens.css": "./src/tokens.css"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules/.tmp .turbo"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.7.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "react": "^19.3.1",
+    "typescript": "^5.9.3"
+  }
+}

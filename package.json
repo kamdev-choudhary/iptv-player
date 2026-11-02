@@ -11,16 +11,21 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "lint": "turbo run lint",
+    "lint": "oxlint",
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean && rm -rf node_modules .turbo",
     "migrate": "pnpm --filter @tuner/api migrate",
     "migrate:down": "pnpm --filter @tuner/api migrate:down",
     "sync": "pnpm --filter @tuner/api sync",
-    "health": "pnpm --filter @tuner/api health"
+    "health": "pnpm --filter @tuner/api health",
+    "lint:fix": "oxlint --fix",
+    "test": "turbo run test",
+    "test:watch": "turbo run test:watch",
+    "check": "pnpm lint && turbo run typecheck test"
   },
   "devDependencies": {
     "turbo": "^2.11.10",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "oxlint": "^1.90.0"
   }
 }

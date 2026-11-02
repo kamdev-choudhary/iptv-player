@@ -1,5 +1,5 @@
 import { Kysely, PostgresDialect, type LogEvent } from 'kysely'
-import pg from 'pg'
+import { Pool, types } from 'pg'
 import { env, isProduction } from '../env.ts'
 import type { Database } from './schema.ts'
 
@@ -8,9 +8,9 @@ import type { Database } from './schema.ts'
  * Every bigint here is a COUNT over at most a few hundred thousand rows, so
  * reading them as numbers is safe and keeps the query layer honest.
  */
-pg.types.setTypeParser(pg.types.builtins.INT8, (v) => Number(v))
+types.setTypeParser(types.builtins.INT8, (v) => Number(v))
 
-export const pool = new pg.Pool({
+export const pool = new Pool({
   connectionString: env.DATABASE_URL,
   max: env.DATABASE_POOL_MAX,
   // A probe sweep opens and drops connections in bursts; let idle ones go.
