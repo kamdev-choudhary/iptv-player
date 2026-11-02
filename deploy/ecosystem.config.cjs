@@ -9,9 +9,14 @@ module.exports = {
       cwd: '/srv/tuner',
       script: 'apps/api/dist/index.js',
       interpreter: '/usr/bin/node',
+      // The production bundle has no dotenv in it — in development `tsx` reads
+      // the file. Node's own loader does the same job here, so the secrets stay
+      // in one place and the application needs no loader of its own.
+      node_args: '--env-file-if-exists=/srv/tuner/.env',
       exec_mode: 'fork',
       instances: 1,
-      // Secrets stay in /srv/tuner/.env, which the process reads itself.
+      // These override anything of the same name in .env, which is what makes
+      // them the deployment's decision rather than the file's.
       env: {
         NODE_ENV: 'production',
         // Five digits, one per service on this box: vayu 12992, pixo 12993.
