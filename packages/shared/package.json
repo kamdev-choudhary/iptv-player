@@ -1,0 +1,13 @@
+{
+  "name": "@tuner/shared",
+  "private": true,
+  "version": "3.0.0",
+  "type": "module",
+  "description": "Wire contract shared by the Tuner client and API.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "tsc -b --noEmit"
+  }
+}
