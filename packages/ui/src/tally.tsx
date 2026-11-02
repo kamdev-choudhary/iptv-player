@@ -39,7 +39,7 @@ export interface TallyProps {
 }
 
 export function Tally({ state, struck, size = 'sm', className }: TallyProps) {
-  const box = size === 'sm' ? 'size-2' : 'size-2.5'
+  const box = size === 'sm' ? 'size-2.5' : 'size-3'
   return (
     <>
       {/* The state reaches a screen reader as words rather than as the label of
@@ -55,7 +55,7 @@ export function Tally({ state, struck, size = 'sm', className }: TallyProps) {
           // Filled, half, hollow. The fill carries the state, not the hue
           // alone, so it survives print, dimming and a colourblind eye.
           state === 'live' && 'border-current bg-current',
-          state === 'hold' && 'border-current bg-current/35',
+          state === 'hold' && 'border-current bg-current/40',
           state === 'fault' && 'border-current bg-transparent',
           state === 'routed' && 'border-current bg-current/60',
           state === 'off' && 'border-current bg-transparent opacity-60',

@@ -380,6 +380,7 @@ export async function facets(): Promise<Facets> {
       channels: number
       sources: number
       live: number
+      dead: number
       updated: Date | null
     }>`
       select
@@ -388,6 +389,9 @@ export async function facets(): Promise<Facets> {
         (select count(*)::int from sources s
           join source_health h on h.source_id = s.id
           where s.enabled and h.ok) as live,
+        (select count(*)::int from sources s
+          join source_health h on h.source_id = s.id
+          where s.enabled and not h.ok) as dead,
         (select max(updated_at) from channels) as updated
     `.execute(db),
     db
@@ -404,6 +408,7 @@ export async function facets(): Promise<Facets> {
     channelCount: t?.channels ?? 0,
     sourceCount: t?.sources ?? 0,
     liveSourceCount: t?.live ?? 0,
+    deadSourceCount: t?.dead ?? 0,
     updatedAt: t?.updated ? new Date(t.updated).toISOString() : null,
     lastHealthCheckAt: lastCheck?.at
       ? new Date(lastCheck.at as unknown as string).toISOString()

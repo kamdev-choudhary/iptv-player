@@ -125,7 +125,10 @@ export const facets = z.object({
   languages: z.array(facet),
   channelCount: z.number().int().nonnegative(),
   sourceCount: z.number().int().nonnegative(),
+  /** Sources whose last probe passed. */
   liveSourceCount: z.number().int().nonnegative(),
+  /** Sources whose last probe failed. The rest have simply not been checked. */
+  deadSourceCount: z.number().int().nonnegative(),
   /** When the catalog last changed, for cache keys and an "as of" line. */
   updatedAt: isoDate.nullable(),
   lastHealthCheckAt: isoDate.nullable(),

@@ -54,18 +54,19 @@ export function initials(name: string): string {
  * The tones a logo-less channel falls back to.
  *
  * A curated set rather than a hue rotation. Rotating the full circle walks
- * through olive, mustard and brick, which is what made an earlier version of
- * the list look muddy; these six sit at one lightness and one low chroma, in
- * the cool half of the wheel plus a single rose, so a column of them reads as
- * one family instead of a paint chart.
+ * through olive, mustard and brick, which made an earlier list look muddy; a
+ * first attempt at fixing it leaned too far the other way and came out almost
+ * entirely green. These six sit at one lightness, in the cool half of the
+ * wheel plus a single rose, far enough apart to tell neighbouring rows apart
+ * and close enough to read as one family.
  */
 const MARK_TONES = [
-  'oklch(0.38 0.04 250)', // indigo
-  'oklch(0.38 0.04 215)', // blue
-  'oklch(0.38 0.04 192)', // teal
-  'oklch(0.38 0.04 295)', // violet
-  'oklch(0.38 0.04 340)', // rose
-  'oklch(0.38 0.03 160)', // sage
+  'oklch(0.42 0.055 258)', // indigo
+  'oklch(0.42 0.05 228)', // blue
+  'oklch(0.42 0.045 202)', // teal
+  'oklch(0.42 0.055 300)', // violet
+  'oklch(0.42 0.05 348)', // rose
+  'oklch(0.42 0.035 268)', // slate
 ] as const
 
 /** Stable per name, so a channel always comes back the same colour. */

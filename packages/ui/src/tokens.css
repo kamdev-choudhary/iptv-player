@@ -35,7 +35,7 @@
      every row warns is a list that says nothing. Amber would mean "degraded",
      which is not what "not checked yet" means. */
   --color-live: #3fd08a;
-  --color-hold: #596273;
+  --color-hold: #6c7589;
   --color-fault: #e05260;
   --color-routed: #8d7bea;
 

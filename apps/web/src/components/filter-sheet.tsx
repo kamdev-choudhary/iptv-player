@@ -66,7 +66,11 @@ export function FilterSheet({
   onView,
 }: FilterSheetProps) {
   const active = activeFilterCount(filters)
-  const dead = facets ? Math.max(0, facets.sourceCount - facets.liveSourceCount) : 0
+  // Unchecked is the remainder, and on a fresh catalog it is nearly all of
+  // it — calling that "not answering" would be the panel telling a lie.
+  const unchecked = facets
+    ? Math.max(0, facets.sourceCount - facets.liveSourceCount - facets.deadSourceCount)
+    : 0
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -196,8 +200,9 @@ export function FilterSheet({
             <Rule>Last probe</Rule>
             {facets ? (
               <>
-                <TallyCount state="live" label="Live sources" count={facets.liveSourceCount} />
-                <TallyCount state="fault" label="Not answering" count={dead} />
+                <TallyCount state="live" label="Live" count={facets.liveSourceCount} />
+                <TallyCount state="fault" label="Not answering" count={facets.deadSourceCount} />
+                <TallyCount state="hold" label="Not checked yet" count={unchecked} />
                 <p className="pt-2 text-micro text-muted-foreground">
                   {facets.lastHealthCheckAt
                     ? `Checked ${new Intl.DateTimeFormat(undefined, {

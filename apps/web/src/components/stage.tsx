@@ -144,8 +144,14 @@ export function Stage({
       </div>
 
       <div className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1">
-        <h1 className="min-w-0 flex-1 truncate text-section leading-tight">
-          {channel?.name ?? 'Tuner'}
+        <h1
+          className={cn(
+            'min-w-0 flex-1 truncate text-section leading-tight',
+            // Nothing tuned yet: this is a prompt, not a title.
+            !channel && 'text-muted-foreground',
+          )}
+        >
+          {channel?.name ?? 'Nothing playing'}
         </h1>
 
         {viaProxy && live ? <Badge variant="routed">through server</Badge> : null}
