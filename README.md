@@ -73,7 +73,7 @@ pnpm migrate                    # create the schema
 pnpm sync                       # pull iptv-org into Postgres (~25 MB, one minute)
 pnpm health --limit 400         # probe a sample, so the list has liveness data
 
-pnpm dev                        # API on :8080, client on :5173
+pnpm dev                        # API on :12994, client on :12995
 ```
 
 The client proxies `/api`, `/stream` and `/admin` to the API in development, so

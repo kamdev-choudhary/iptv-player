@@ -12,14 +12,14 @@ export default defineConfig({
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
   server: {
-    port: 5173,
+    port: 12995,
     // The API, the stream proxy and the admin surface are all same-origin in
     // production, so they are same-origin in development too. That keeps CORS
     // and the proxy's own URL rewriting out of the difference between the two.
     proxy: {
-      '/api': { target: 'http://localhost:8080', changeOrigin: true },
-      '/stream': { target: 'http://localhost:8080', changeOrigin: true },
-      '/admin': { target: 'http://localhost:8080', changeOrigin: true },
+      '/api': { target: 'http://127.0.0.1:12994', changeOrigin: true },
+      '/stream': { target: 'http://127.0.0.1:12994', changeOrigin: true },
+      '/admin': { target: 'http://127.0.0.1:12994', changeOrigin: true },
     },
   },
   build: {
