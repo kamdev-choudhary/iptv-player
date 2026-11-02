@@ -113,9 +113,6 @@ export default function App() {
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
       <TopBar
-        searchRef={searchRef}
-        search={search}
-        onSearch={setSearch}
         activeFilters={activeFilterCount(settings.filters)}
         onOpenFilters={() => setFiltersOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
@@ -134,6 +131,9 @@ export default function App() {
         >
           <Lineup
             channels={channels}
+            searchRef={searchRef}
+            search={search}
+            onSearch={setSearch}
             facets={facets.data}
             tunedId={tunedId}
             favorites={settings.favorites}

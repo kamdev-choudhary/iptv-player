@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react'
-import { Star } from 'lucide-react'
-import { Button, Empty, Readout, RowSkeleton, Tally, cn } from '@tuner/ui'
+import { useEffect, useRef, type RefObject } from 'react'
+import { Search, Star } from 'lucide-react'
+import { Button, Empty, Input, Readout, RowSkeleton, Tally, cn } from '@tuner/ui'
 import type { ApiChannel, Facets } from '@tuner/shared'
 import { channelSummary, channelTally, heightLabel } from '@/lib/signal.ts'
 import { prefs } from '@/lib/prefs.ts'
@@ -75,6 +75,9 @@ function Row({
 
 export interface LineupProps {
   channels: ApiChannel[]
+  searchRef: RefObject<HTMLInputElement | null>
+  search: string
+  onSearch: (value: string) => void
   facets: Facets | undefined
   tunedId: string | null
   favorites: readonly string[]
@@ -90,6 +93,9 @@ export interface LineupProps {
 
 export function Lineup({
   channels,
+  searchRef,
+  search,
+  onSearch,
   facets,
   tunedId,
   favorites,
@@ -121,10 +127,31 @@ export function Lineup({
 
   return (
     <section aria-label="Channels" className="flex h-full min-h-0 flex-col">
-      <header className="flex h-11 shrink-0 items-center gap-2 border-b px-4">
-        <h2 className="text-small text-muted-foreground">
-          {loading ? 'Loading channels' : `${total.toLocaleString()} channels`}
-        </h2>
+      {/* The search sits on top of what it searches, and the count under it is
+          the answer to what it just did. */}
+      <header className="flex shrink-0 flex-col gap-2 border-b p-3">
+        <div className="relative">
+          <Search
+            aria-hidden
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+          />
+          <Input
+            ref={searchRef}
+            type="search"
+            value={search}
+            onChange={(event) => onSearch(event.target.value)}
+            placeholder="Search channels"
+            aria-label="Search channels"
+            className="h-9 rounded-pill pl-9"
+          />
+        </div>
+        <p className="px-1 text-small text-muted-foreground">
+          {loading
+            ? 'Loading channels'
+            : search
+              ? `${total.toLocaleString()} matching \u201c${search}\u201d`
+              : `${total.toLocaleString()} channels`}
+        </p>
       </header>
 
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5">
