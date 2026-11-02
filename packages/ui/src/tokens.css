@@ -19,24 +19,28 @@
  */
 
 @theme {
-  /* Anodised rack graphite — cool and slightly blue, not a tinted black. */
-  --color-rack: #16191d;
-  --color-panel: #1e2227;
-  --color-panel-lift: #23282e;
-  --color-rail: #2a2f36;
-  --color-etch: #8c949e;
-  --color-readout: #e8eaed;
+  /* A cool neutral ramp with a trace of blue. Each step is a real step: the
+     page, a panel on it, something raised off the panel, and the hairline
+     between them. An earlier version spaced them too closely and the panels
+     read as one flat sheet. */
+  --color-rack: #0b0d11;
+  --color-panel: #13161b;
+  --color-panel-lift: #1a1e25;
+  --color-rail: #252a33;
+  --color-etch: #929aa8;
+  --color-readout: #eef1f5;
 
-  /* Signal states, borrowed from tally lights. These are semantic: the same
-     hue means the same thing in the lineup, the source strip and the filters. */
-  --color-live: #46c27b;
-  --color-hold: #d9a33a;
-  --color-fault: #e0584f;
-  --color-routed: #9d86e0;
+  /* Signal states. `hold` is deliberately a dim neutral rather than amber:
+     most of a freshly synced catalog has never been probed, and a list where
+     every row warns is a list that says nothing. Amber would mean "degraded",
+     which is not what "not checked yet" means. */
+  --color-live: #3fd08a;
+  --color-hold: #596273;
+  --color-fault: #e05260;
+  --color-routed: #8d7bea;
 
-  /* The one accent: cyan, the first SMPTE bar, meaning signal present.
-     Focus rings, the tuned channel, the wordmark. Nothing else. */
-  --color-signal: #55d6e3;
+  /* The one accent: focus rings, the tuned channel, the wordmark. Nothing else. */
+  --color-signal: #4fcfe0;
 
   --font-sans: 'Chivo', ui-sans-serif, system-ui, sans-serif;
   /* Numerals only — latency, resolution, counts. An instrument readout, not a
@@ -52,13 +56,9 @@
   --text-slate: 2rem;
 }
 
-/**
- * The shadcn/ui contract. Panels and rows are flush and ruled, so the radius
- * is 2px rather than the 10px shadcn ships with: only things you press are
- * rounded, and barely.
- */
+/** The shadcn/ui contract, mapped onto the palette above. */
 :root {
-  --radius: 2px;
+  --radius: 8px;
 
   --background: var(--color-rack);
   --foreground: var(--color-readout);
@@ -140,10 +140,10 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --radius-sm: calc(var(--radius) - 1px);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 2px);
-  --radius-xl: calc(var(--radius) + 6px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
   --radius-pill: 999px;
 }
 
@@ -154,6 +154,13 @@
 
   * {
     border-color: var(--color-rail);
+  }
+
+  /* Long lists of foreign channel names sit better with slightly tighter
+     tracking than the default. */
+  h1,
+  h2 {
+    letter-spacing: -0.01em;
   }
 
   html {
