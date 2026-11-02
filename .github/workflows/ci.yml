@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Everything in this file runs against a throwaway database on the runner.
+  DATABASE_URL: postgres://tuner:tuner@localhost:5432/tuner
+  STREAM_SECRET: ci-stream-secret-not-a-real-one
+  ADMIN_TOKEN: ci-admin-token-not-a-real-one
+  NODE_ENV: development
+  LOG_LEVEL: warn
+  CORS_ORIGIN: http://localhost:12995
+
+jobs:
+  # The fast gate: no database, no browser, nothing over the network after
+  # install. This is what should fail within a couple of minutes when it fails.
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm knip
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: apps/web/dist
+          retention-days: 3
+
+  # The slow gate: the real application, in a real browser, against a real
+  # Postgres holding a real catalog pulled from iptv-org.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    needs: check
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # Postgres comes with the runner image. Starting the service beats a
+      # container: this project does not use Docker anywhere else, and there is
+      # no reason for CI to be the one place that does.
+      - name: Start Postgres
+        run: |
+          sudo systemctl start postgresql.service
+          until pg_isready -h localhost -q; do sleep 1; done
+          sudo -u postgres psql -c "create role tuner login password 'tuner' superuser"
+          sudo -u postgres createdb -O tuner tuner
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Cache the browser
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - run: pnpm e2e:install
+
+      - name: Seed the catalog
+        # The suite asserts on behaviour rather than on any particular channel,
+        # but it does need a catalog of a realistic size to assert against.
+        timeout-minutes: 10
+        run: |
+          pnpm migrate
+          pnpm sync
+          pnpm health --limit 300
+
+      - run: pnpm e2e
+
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          retention-days: 7

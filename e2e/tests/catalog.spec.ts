@@ -28,10 +28,19 @@ test('a search with no matches offers a way back', async ({ app }) => {
 })
 
 test('paging appends rather than replacing', async ({ app }) => {
-  const first = await rows(app).count()
-  await rows(app).last().scrollIntoViewIfNeeded()
-  await app.waitForTimeout(1500)
-  expect(await rows(app).count()).toBeGreaterThan(first)
+  // The list is virtualised, so the number of rows in the document stays
+  // roughly constant however far you scroll. What grows when a page arrives is
+  // the height of the list itself, which is also what the scrollbar reports.
+  const scroller = app.locator('section[aria-label="Channels"] > div').last()
+  const height = () => scroller.evaluate((el) => el.scrollHeight)
+
+  const before = await height()
+  await scroller.evaluate((el) => el.scrollTo({ top: el.scrollHeight }))
+  await app.waitForTimeout(2000)
+
+  expect(await height()).toBeGreaterThan(before)
+  // And the rows on screen are different ones, not the same page redrawn.
+  await expect(rows(app).first()).toBeVisible()
 })
 
 test('the country filter is searchable and narrows the list', async ({ app }) => {

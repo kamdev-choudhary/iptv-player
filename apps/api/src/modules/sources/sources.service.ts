@@ -229,13 +229,3 @@ export async function deleteSource(id: number) {
   await refreshChannelStats([row.channel_id])
   return row.channel_id
 }
-
-export async function setChannelHidden(id: string, hidden: boolean) {
-  const updated = await db
-    .updateTable('channels')
-    .set({ hidden, locked: true })
-    .where('id', '=', id)
-    .returning('id')
-    .executeTakeFirst()
-  if (!updated) throw new NotFoundError(`channel ${id}`)
-}

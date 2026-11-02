@@ -110,8 +110,6 @@ export interface Database {
   job_runs: JobRunTable
 }
 
-export type ChannelRow = Selectable<ChannelTable>
 export type SourceRow = Selectable<SourceTable>
 export type SourceHealthRow = Selectable<SourceHealthTable>
-export type LookupRow = Selectable<LookupTable>
 export type JobRunRow = Selectable<JobRunTable>

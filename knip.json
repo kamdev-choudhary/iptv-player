@@ -1,0 +1,29 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignoreExportsUsedInFile": true,
+  "workspaces": {
+    ".": { "entry": [], "project": [] },
+    "apps/api": {
+      "entry": ["src/cli/*.ts", "src/core/db/migrations/*.ts", "tests/**/*.test.ts"],
+      "project": ["src/**/*.ts", "tests/**/*.ts"],
+      "ignoreDependencies": ["pino-pretty"]
+    },
+    "apps/web": {
+      "entry": ["tests/**/*.test.ts"],
+      "project": ["src/**/*.{ts,tsx}", "tests/**/*.ts"]
+    },
+    "packages/shared": {
+      "entry": ["tests/**/*.test.ts"],
+      "project": ["src/**/*.ts", "tests/**/*.ts"]
+    },
+    "packages/ui": {
+      "entry": ["src/components/ui/*.tsx"],
+      "project": ["src/**/*.{ts,tsx}"],
+      "ignoreBinaries": ["shadcn"]
+    },
+    "e2e": {
+      "entry": ["fixtures.ts", "tests/**/*.spec.ts"],
+      "project": ["**/*.ts"]
+    }
+  }
+}

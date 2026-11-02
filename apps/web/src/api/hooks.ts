@@ -131,29 +131,6 @@ export function usePatchSource(token: string | null) {
   })
 }
 
-export function useDeleteSource(token: string | null) {
-  const client = useQueryClient()
-  return useMutation({
-    mutationFn: (id: number) =>
-      api.delete(`/admin/sources/${id}`, patchSourceResponse, token ?? undefined),
-    onSuccess: () => invalidateCatalog(client),
-  })
-}
-
-export function useAddSource(token: string | null) {
-  const client = useQueryClient()
-  return useMutation({
-    mutationFn: ({ channelId, url }: { channelId: string; url: string }) =>
-      api.post(
-        `/admin/channels/${encodeURIComponent(channelId)}/sources`,
-        z.object({ id: z.number() }),
-        { url },
-        token ?? undefined,
-      ),
-    onSuccess: () => invalidateCatalog(client),
-  })
-}
-
 export function useRunJob(token: string | null) {
   const client = useQueryClient()
   return useMutation({
