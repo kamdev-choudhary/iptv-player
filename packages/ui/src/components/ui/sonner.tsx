@@ -5,15 +5,20 @@ import {
   OctagonXIcon,
   TriangleAlertIcon,
 } from 'lucide-react'
-import { useTheme } from 'next-themes'
 import { Toaster as Sonner, type ToasterProps } from 'sonner'
 
+/**
+ * Pinned to the dark theme rather than reading one from a theme provider.
+ *
+ * shadcn generates this file against `next-themes`, which is a whole extra
+ * dependency to answer a question this application has already answered in
+ * `tokens.css`: there is one theme, it is dark, and a toast that asked the
+ * system would be the only thing here that disagreed with the rest.
+ */
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = 'system' } = useTheme()
-
   return (
     <Sonner
-      theme={theme as ToasterProps['theme']}
+      theme="dark"
       className="toaster group"
       icons={{
         success: <CircleCheckIcon className="size-4" />,

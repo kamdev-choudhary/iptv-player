@@ -27,6 +27,7 @@
     "e2e:install": "pnpm --filter @tuner/e2e e2e:install"
   },
   "devDependencies": {
+    "knip": "^6.44.1",
     "oxlint": "^1.90.0",
     "prettier": "^3.9.10",
     "turbo": "^2.11.10",

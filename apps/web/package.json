@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.105.1",
+    "@tanstack/react-virtual": "^3.14.24",
     "@tuner/shared": "workspace:*",
     "@tuner/ui": "workspace:*",
     "clsx": "^2.1.1",
@@ -22,6 +23,7 @@
     "lucide-react": "^1.66.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "react-error-boundary": "^6.1.6",
     "zod": "^4.6.7",
     "zustand": "^5.0.16"
   },
@@ -37,6 +39,7 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
     "vite": "^8.3.5",
+    "vite-plugin-pwa": "^2.0.0",
     "vitest": "^5.0.5"
   }
 }

@@ -25,6 +25,7 @@
     "@fastify/helmet": "^13.2.0",
     "@fastify/rate-limit": "^11.2.1",
     "@fastify/static": "^10.1.8",
+    "@fastify/under-pressure": "^9.2.1",
     "croner": "^11.0.0",
     "fastify": "^5.12.7",
     "fastify-plugin": "^6.0.1",
