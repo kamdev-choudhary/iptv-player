@@ -35,6 +35,22 @@ export {
   SelectValue,
 } from './components/ui/select.tsx'
 export {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from './components/ui/sheet.tsx'
+export {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+  PopoverTrigger,
+} from './components/ui/popover.tsx'
+export {
   Dialog,
   DialogClose,
   DialogContent,
