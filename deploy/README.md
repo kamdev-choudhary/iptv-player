@@ -4,14 +4,14 @@ Runs on the shared box at `140.238.251.143` (`ssh qp`), alongside q-pathshala,
 vayu, pixo and project-mate. Everything here follows what those already do, so
 there is one shape to learn rather than five.
 
-| | |
-| --- | --- |
-| Domain | `tv.quartix.in` |
-| Repo | `/srv/tuner`, owned by `ubuntu` |
-| Process | pm2 `tuner-api`, port **12994** |
-| Database | Postgres `tuner`, role `tuner` |
-| Secrets | `/srv/tuner/.env` (0600), `/srv/tuner-keys/` |
-| Web | nginx serves `/srv/tuner/apps/web/dist` |
+|          |                                              |
+| -------- | -------------------------------------------- |
+| Domain   | `tv.quartix.in`                              |
+| Repo     | `/srv/tuner`, owned by `ubuntu`              |
+| Process  | pm2 `tuner-api`, port **12994**              |
+| Database | Postgres `tuner`, role `tuner`               |
+| Secrets  | `/srv/tuner/.env` (0600), `/srv/tuner-keys/` |
+| Web      | nginx serves `/srv/tuner/apps/web/dist`      |
 
 Ports on this box are five digits, one per service: vayu 12992, pixo 12993,
 tuner 12994. Nothing listens on a default port, so two services can never

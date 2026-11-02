@@ -44,7 +44,8 @@ apps/
 packages/
   shared/           zod schemas — the one contract both sides validate against
   ui/               shadcn/ui primitives, themed, plus this app's own vocabulary
-deploy/             systemd unit and Caddyfile for a single VPS
+e2e/                playwright: the application driven in a real browser
+deploy/             nginx vhost, pm2 ecosystem and the deploy script
 ```
 
 Each backend module owns everything about itself, in four layers:
@@ -171,39 +172,51 @@ test in `apps/api/tests/hls.test.ts`.
 
 ## Deploying
 
-Built for one VPS. The API serves the client, so the player, the catalog and
-the proxy are same-origin: no CORS to configure and one certificate to renew.
+Live at **https://tv.quartix.in**, on a VPS it shares with four other
+services. nginx terminates TLS and serves `apps/web/dist`; `/api/`, `/stream/`
+and `/admin/` proxy to the Node process on port 12994, which pm2 keeps up.
 
 ```sh
-pnpm install --frozen-lockfile
-pnpm build                  # apps/api/dist and apps/web/dist
-
-sudo useradd --system --home /srv/tuner tuner
-sudo rsync -a --delete ./ /srv/tuner/
-sudo cp deploy/tuner.service /etc/systemd/system/
-sudo systemctl daemon-reload && sudo systemctl enable --now tuner
+ssh qp '/srv/tuner/deploy/deploy.sh'
 ```
 
-Then put Caddy in front for TLS — `deploy/Caddyfile` has the reverse-proxy
-settings a stream needs, which are mostly "do not buffer and do not time out".
-Set the domain at the top of it.
+That resets to `origin/main`, installs, builds, migrates, reloads pm2 and waits
+for `/health`. `deploy/README.md` is the full runbook: first-time setup, the
+nginx reload procedure, how to seed the catalog, and what to look at when
+something is wrong.
+
+Three proxy locations rather than one, because they want opposite things:
+`/api/` is small JSON and is buffered, `/stream/` is video that must not be and
+must not time out mid-programme, `/admin/` must never be cached.
 
 Bandwidth is the thing to size for: 1080p HLS is roughly 5 Mbps, about 2.5 GB
 per viewer-hour, and all of it crosses the box for proxied sources. Pick a host
-whose traffic is included rather than metered.
+whose traffic is included rather than metered, and keep `PROXY_MAX_CONCURRENT`
+honest about what the box can carry.
 
 ## Checks
 
 ```sh
-pnpm lint        # oxlint across the workspace
-pnpm typecheck   # tsc per package
-pnpm test        # vitest; tests live in each package's tests/
-pnpm check       # all three
+pnpm lint          # oxlint across the workspace
+pnpm typecheck     # tsc per package
+pnpm test          # vitest; tests live in each package's tests/
+pnpm check         # all three
+
+pnpm e2e:install   # once: fetch the browser
+pnpm e2e           # playwright, desktop and mobile
+pnpm e2e:ui        # the same, with the inspector
 ```
 
-The suites are deliberately pure functions — playlist rewriting, M3U parsing,
-failover decisions, signing, cursors, the signal-state mapping. They are the
-parts with real branching in them, and they run in under two seconds.
+The unit suites are deliberately pure functions — playlist rewriting, M3U
+parsing, failover decisions, signing, cursors, the signal-state mapping. They
+are the parts with real branching in them, and they run in under two seconds.
+
+The end-to-end suite in `e2e/` drives the real application against the real
+database; it starts both dev servers if they are not already up. It asserts on
+behaviour rather than on any particular channel, because the catalog is eleven
+thousand strangers' streams and half of them are dead on any given day. What it
+checks is that the player always _says_ which — and it has already caught a
+filter button that rendered with no accessible name at all below `md`.
 
 ## Legal
 

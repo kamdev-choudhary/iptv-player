@@ -28,9 +28,11 @@ export function TopBar({ activeFilters, onOpenFilters, onOpenSettings }: TopBarP
       </a>
 
       <div className="ml-auto flex items-center gap-1 sm:gap-2">
-        <Button variant="ghost" size="sm" onClick={onOpenFilters}>
+        {/* The label is hidden below md, so the button carries its own name —
+            without it there is an unlabelled control on every phone. */}
+        <Button variant="ghost" size="sm" onClick={onOpenFilters} aria-label="Filters">
           <SlidersHorizontal />
-          <span className="hidden sm:inline">Filters</span>
+          <span className="hidden md:inline">Filters</span>
           {activeFilters > 0 ? <Badge variant="signal">{activeFilters}</Badge> : null}
         </Button>
 
