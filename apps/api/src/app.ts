@@ -4,6 +4,7 @@ import etag from '@fastify/etag'
 import helmet from '@fastify/helmet'
 import rateLimit from '@fastify/rate-limit'
 import fastifyStatic from '@fastify/static'
+import underPressure from '@fastify/under-pressure'
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify'
 import {
   hasZodFastifySchemaValidationErrors,
@@ -97,6 +98,22 @@ export async function buildServer(): Promise<FastifyInstance> {
     global: false,
     max: env.PROXY_RATE_LIMIT,
     timeWindow: '1 minute',
+  })
+
+ 
+  await app.register(underPressure, {
+    maxEventLoopDelay: env.PRESSURE_MAX_EVENT_LOOP_DELAY_MS,
+    maxRssBytes: env.PRESSURE_MAX_RSS_MB * 1024 * 1024,
+    retryAfter: 15,
+    exposeStatusRoute: false,
+   pressureHandler: (request, reply, type, value) => {
+      if (!request.url.startsWith('/stream')) return
+      request.log.warn({ type, value, url: request.url }, 'shedding a stream request')
+      void reply
+        .code(503)
+        .header('retry-after', '15')
+        .send({ error: 'The server is at capacity. Try again shortly.' })
+    },
   })
 
   // Read API: ETags and a short shared cache.

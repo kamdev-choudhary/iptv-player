@@ -34,6 +34,16 @@ const schema = z.object({
   /** Requests per minute per IP against the proxy. */
   PROXY_RATE_LIMIT: z.coerce.number().int().min(1).default(600),
 
+  /**
+   * Event-loop lag above which the box stops accepting *new* streams. Relaying
+   * video is the one thing here that can saturate a small VPS, and a server
+   * that keeps accepting viewers past that point serves everyone badly instead
+   * of most people well. 0 turns the check off.
+   */
+  PRESSURE_MAX_EVENT_LOOP_DELAY_MS: z.coerce.number().int().min(0).default(1_000),
+  /** Resident memory ceiling, in MB, applied the same way. 0 turns it off. */
+  PRESSURE_MAX_RSS_MB: z.coerce.number().int().min(0).default(0),
+
   /** Whether this process runs the scheduled jobs. Off on extra web replicas. */
   RUN_JOBS: z.stringbool().default(true),
   SYNC_CRON: z.string().default('30 5 * * *'),
