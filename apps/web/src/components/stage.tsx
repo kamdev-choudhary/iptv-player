@@ -1,29 +1,49 @@
 import type { RefObject } from 'react'
-import { Layers, Maximize2, Pause, PictureInPicture2, Play, Volume2, VolumeX } from 'lucide-react'
+import { useState } from 'react'
+import {
+  Check,
+  ExternalLink,
+  Layers,
+  Link2,
+  Maximize2,
+  MoreVertical,
+  Pause,
+  PictureInPicture2,
+  Play,
+  Volume2,
+  VolumeX,
+} from 'lucide-react'
 import {
   Badge,
   Button,
-  PanelSelect,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
   Readout,
   Tally,
   cn,
 } from '@tuner/ui'
 import type { ApiSource, ChannelDetail } from '@tuner/shared'
 import { heightLabel, latencyLabel, sourceTally } from '@/lib/signal.ts'
+import { useActivity } from '@/hooks/use-idle.ts'
 import type { PlaybackState, StageAction } from '@/hooks/use-playback.ts'
 import type { Rendition } from '@/lib/player.ts'
 import { Slate } from './slate.tsx'
 
 /**
- * The picture, and one quiet line of controls under it.
+ * The picture, with its controls drawn over it.
  *
- * An earlier version printed source number, resolution and latency as three
- * labelled gauges, and listed every source permanently below. All of it was
- * true and none of it was wanted while something was playing — so the numbers
- * moved into the source list, and the source list moved behind a button.
+ * They used to sit in a strip underneath, which cost a row of height on every
+ * screen and most of the list on a phone. Over the video they cost nothing
+ * until someone moves, which is how every player people already know behaves.
+ * Everything beyond play, sound and size lives in the overflow menu — source,
+ * quality, and the two links out.
  */
 
 /** A hostname is what identifies a source when it has no feed name. */
@@ -34,84 +54,6 @@ function sourceLabel(source: ApiSource) {
   } catch {
     return source.url.slice(0, 40)
   }
-}
-
-/**
- * The sources behind a channel, on request. This is where the telemetry lives:
- * which ones answered the last probe, how fast, and at what resolution.
- */
-function SourceList({
-  sources,
-  sourceIndex,
-  onTune,
-}: {
-  sources: ApiSource[]
-  sourceIndex: number
-  onTune: (index: number) => void
-}) {
-  return (
-    <div className="flex max-h-80 flex-col overflow-y-auto">
-      {sources.map((source, index) => (
-        <button
-          key={source.id}
-          type="button"
-          onClick={() => onTune(index)}
-          className={cn(
-            'flex items-center gap-2 rounded-md px-2 py-2 text-left text-small',
-            index === sourceIndex ? 'bg-signal/10 text-signal' : 'hover:bg-accent',
-          )}
-        >
-          <Tally state={sourceTally(source)} />
-          <span className="min-w-0 flex-1 truncate">{sourceLabel(source)}</span>
-          {source.play === 'proxy' ? <Badge variant="routed">server</Badge> : null}
-          <Readout value={heightLabel(source.height)} className="w-11 text-right" />
-          <Readout
-            value={latencyLabel(source.health?.latencyMs ?? null)}
-            className="w-12 text-right"
-          />
-        </button>
-      ))}
-    </div>
-  )
-}
-
-/**
- * Whether the thing you just tapped is actually playing.
- *
- * The picture answers this on a desktop, where it is always in view. On a
- * phone it is a quarter of the screen above a list you are scrolling, so the
- * state is also said in words right beside the channel's name.
- */
-function NowPlaying({ phase, viaProxy }: { phase: PlaybackState['phase']; viaProxy: boolean }) {
-  if (phase === 'idle') return null
-
-  const state = phase === 'live' ? 'live' : phase === 'dead' ? 'fault' : 'hold'
-  const label =
-    phase === 'live'
-      ? viaProxy
-        ? 'Playing via server'
-        : 'Playing'
-      : phase === 'dead'
-        ? 'Not playing'
-        : 'Connecting'
-
-  return (
-    <span className="flex shrink-0 items-center gap-1.5">
-      <Tally state={state} />
-      <span
-        className={cn(
-          'text-small',
-          phase === 'live'
-            ? 'text-live'
-            : phase === 'dead'
-              ? 'text-fault'
-              : 'text-muted-foreground',
-        )}
-      >
-        {label}
-      </span>
-    </span>
-  )
 }
 
 /**
@@ -159,108 +101,226 @@ export function Stage({
   togglePictureInPicture,
   onFullscreen,
 }: StageProps) {
+  const [menuOpen, setMenuOpen] = useState(false)
   const live = phase === 'live'
+  // The overlay hides only over a moving picture. With nothing playing there is
+  // nothing for it to be in the way of.
+  const { active, wake } = useActivity(2600, menuOpen || !live)
+  const showControls = active
+
+  const statusLabel =
+    phase === 'live'
+      ? viaProxy
+        ? 'Playing via server'
+        : 'Playing'
+      : phase === 'dead'
+        ? 'Not playing'
+        : phase === 'tuning'
+          ? 'Connecting'
+          : null
+
+  const copyLink = () => {
+    if (!channel) return
+    const url = `${window.location.origin}/#c=${encodeURIComponent(channel.id)}`
+    void navigator.clipboard?.writeText(url).catch(() => {})
+  }
 
   return (
-    <section aria-label="Player" className="flex h-full min-h-0 flex-col gap-3">
-      {/* 16:9 on a phone, where the list below needs the rest of the frame; on
-          a desktop it takes whatever height the column has left. */}
-      <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black lg:aspect-auto lg:min-h-0 lg:flex-1">
-        <video
-          ref={videoRef}
-          playsInline
-          controls={false}
-          muted={muted}
-          className={cn('size-full', live ? 'opacity-100' : 'pointer-events-none opacity-0')}
-        />
-        {live ? null : (
-          <div className="absolute inset-0">
-            <Slate
-              head={head}
-              body={body}
-              reason={reason}
-              actions={actions}
-              tuning={phase === 'tuning'}
-            />
-          </div>
-        )}
-      </div>
+    <section
+      aria-label="Player"
+      className="group/stage relative h-full min-h-0 overflow-hidden rounded-xl bg-black"
+      onPointerMove={wake}
+      onPointerLeave={() => !menuOpen && undefined}
+      onFocus={wake}
+    >
+      <video
+        ref={videoRef}
+        playsInline
+        controls={false}
+        muted={muted}
+        onClick={live ? togglePlay : undefined}
+        className={cn('size-full', live ? 'opacity-100' : 'pointer-events-none opacity-0')}
+      />
 
-      <div className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1">
-        {/* Full width on a phone, so the name gets a line of its own and the
-            controls wrap underneath rather than squeezing it to three letters. */}
-        <h1
-          className={cn(
-            'w-full min-w-0 truncate text-section leading-tight sm:w-auto sm:flex-1',
-            // Nothing tuned yet: this is a prompt, not a title.
-            !channel && 'text-muted-foreground',
-          )}
-        >
-          {channel?.name ?? 'Nothing playing'}
-        </h1>
-
-        <NowPlaying phase={phase} viaProxy={viaProxy} />
-
-        {renditions.length > 1 ? (
-          <PanelSelect
-            aria-label="Quality"
-            className="h-8 w-24"
-            value={String(activeRendition)}
-            onValueChange={(value) => setRendition(Number(value))}
-            options={[
-              { value: '-1', label: 'Auto' },
-              ...renditions.map((r) => ({ value: String(r.index), label: `${r.height}p` })),
-            ]}
+      {live ? null : (
+        <div className="absolute inset-0">
+          <Slate
+            head={head}
+            body={body}
+            reason={reason}
+            actions={actions}
+            tuning={phase === 'tuning'}
           />
-        ) : null}
+        </div>
+      )}
 
-        {sources.length > 1 ? (
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <Layers />
-                <span className="tabular">
-                  {sourceIndex + 1}/{sources.length}
+      {/* The control bar. A gradient rather than a panel, so it darkens the
+          picture enough to read against without becoming a second surface. */}
+      <div
+        className={cn(
+          'pointer-events-none absolute inset-x-0 bottom-0 flex items-center gap-1 px-2 pt-10 pb-2',
+          'bg-gradient-to-t from-black/85 via-black/45 to-transparent',
+          'transition-opacity duration-200',
+          showControls ? 'opacity-100' : 'opacity-0',
+        )}
+      >
+        <div className="pointer-events-auto flex w-full items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={togglePlay}
+            disabled={!live}
+            aria-label={paused ? 'Play' : 'Pause'}
+            title={paused ? 'Play (space)' : 'Pause (space)'}
+            className="text-white hover:bg-white/15 hover:text-white"
+          >
+            {paused ? <Play /> : <Pause />}
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={toggleMute}
+            aria-label={muted ? 'Unmute' : 'Mute'}
+            title={muted ? 'Unmute (m)' : 'Mute (m)'}
+            className="text-white hover:bg-white/15 hover:text-white"
+          >
+            {muted ? <VolumeX /> : <Volume2 />}
+          </Button>
+
+          <div className="ml-1 flex min-w-0 flex-1 items-center gap-2">
+            <span className="min-w-0 truncate text-small text-white">
+              {channel?.name ?? 'Nothing playing'}
+            </span>
+            {statusLabel ? (
+              <span className="hidden shrink-0 items-center gap-1.5 sm:flex">
+                <Tally state={live ? 'live' : phase === 'dead' ? 'fault' : 'hold'} />
+                <span
+                  className={cn(
+                    'text-micro',
+                    live ? 'text-live' : phase === 'dead' ? 'text-fault' : 'text-white/70',
+                  )}
+                >
+                  {statusLabel}
                 </span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-80 p-1">
-              <SourceList sources={sources} sourceIndex={sourceIndex} onTune={tuneTo} />
-            </PopoverContent>
-          </Popover>
-        ) : null}
+              </span>
+            ) : null}
+          </div>
 
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={togglePlay}
-          disabled={!live}
-          aria-label={paused ? 'Play' : 'Pause'}
-          title={paused ? 'Play (space)' : 'Pause (space)'}
-        >
-          {paused ? <Play /> : <Pause />}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={toggleMute}
-          aria-label={muted ? 'Unmute' : 'Mute'}
-          title={muted ? 'Unmute (m)' : 'Mute (m)'}
-        >
-          {muted ? <VolumeX /> : <Volume2 />}
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={togglePictureInPicture}
-          disabled={!live}
-          aria-label="Picture in picture"
-        >
-          <PictureInPicture2 />
-        </Button>
-        <Button variant="ghost" size="icon-sm" onClick={onFullscreen} aria-label="Fullscreen">
-          <Maximize2 />
-        </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={onFullscreen}
+            aria-label="Fullscreen"
+            title="Fullscreen (f)"
+            className="text-white hover:bg-white/15 hover:text-white"
+          >
+            <Maximize2 />
+          </Button>
+
+          <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="More options"
+                className="text-white hover:bg-white/15 hover:text-white"
+              >
+                <MoreVertical />
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="end" side="top" sideOffset={8} className="w-60">
+              {/* Sources: the main thing an operator reaches for, and the thing
+                  that carries the telemetry the server collected. */}
+              {sources.length > 1 ? (
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <Layers />
+                    <span className="flex-1">Source</span>
+                    <Readout value={`${sourceIndex + 1}/${sources.length}`} />
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="max-h-80 w-72 overflow-y-auto">
+                    {sources.map((source, index) => (
+                      <DropdownMenuItem key={source.id} onSelect={() => tuneTo(index)}>
+                        <Tally state={sourceTally(source)} />
+                        <span className="min-w-0 flex-1 truncate">{sourceLabel(source)}</span>
+                        {source.play === 'proxy' ? <Badge variant="routed">server</Badge> : null}
+                        <Readout value={heightLabel(source.height)} />
+                        <Readout value={latencyLabel(source.health?.latencyMs ?? null)} />
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              ) : null}
+
+              {renditions.length > 1 ? (
+                <DropdownMenuSub>
+                  <DropdownMenuSubTrigger>
+                    <Check className="opacity-0" />
+                    <span className="flex-1">Quality</span>
+                    <Readout
+                      value={
+                        activeRendition >= 0
+                          ? heightLabel(renditions[activeRendition]?.height ?? null)
+                          : 'Auto'
+                      }
+                    />
+                  </DropdownMenuSubTrigger>
+                  <DropdownMenuSubContent className="w-40">
+                    <DropdownMenuItem onSelect={() => setRendition(-1)}>
+                      <Check className={cn(activeRendition < 0 ? 'opacity-100' : 'opacity-0')} />
+                      Auto
+                    </DropdownMenuItem>
+                    {renditions.map((rendition) => (
+                      <DropdownMenuItem
+                        key={rendition.index}
+                        onSelect={() => setRendition(rendition.index)}
+                      >
+                        <Check
+                          className={cn(
+                            activeRendition === rendition.index ? 'opacity-100' : 'opacity-0',
+                          )}
+                        />
+                        {rendition.height}p
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuSub>
+              ) : null}
+
+              {sources.length > 1 || renditions.length > 1 ? <DropdownMenuSeparator /> : null}
+
+              <DropdownMenuItem onSelect={togglePictureInPicture} disabled={!live}>
+                <PictureInPicture2 />
+                Picture in picture
+              </DropdownMenuItem>
+
+              <DropdownMenuItem onSelect={copyLink} disabled={!channel}>
+                <Link2 />
+                Copy link to channel
+              </DropdownMenuItem>
+
+              {channel?.website ? (
+                <DropdownMenuItem asChild>
+                  <a href={channel.website} target="_blank" rel="noreferrer noopener">
+                    <ExternalLink />
+                    Broadcaster&rsquo;s site
+                  </a>
+                </DropdownMenuItem>
+              ) : null}
+
+              {channel ? (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="font-normal text-muted-foreground">
+                    {channel.liveCount} of {channel.sourceCount} sources live at the last check
+                  </DropdownMenuLabel>
+                </>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </section>
   )
