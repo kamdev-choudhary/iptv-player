@@ -5,37 +5,12 @@ import type { StageAction } from '@/hooks/use-playback.ts'
 /**
  * What the stage shows when there is no picture.
  *
- * A station with nothing to broadcast puts up a test card, and so does this —
- * an alignment grid and a geometry circle, nothing more. There is no content
- * here for it to compete with, which is the only reason it is allowed at all;
- * an earlier version also drew colour bars and a greyscale staircase, which
- * was a costume rather than a signal.
+ * Quiet on purpose. An earlier version drew a full broadcast test card —
+ * alignment grid, geometry circle, colour bars — which was a costume: loud
+ * enough to be the most eye-catching thing on the page, and saying nothing the
+ * sentence underneath did not already say. What is left is a soft pool of
+ * light behind the message, so the panel reads as waiting rather than broken.
  */
-
-function Pattern() {
-  return (
-    <svg
-      aria-hidden
-      viewBox="0 0 160 90"
-      preserveAspectRatio="xMidYMid slice"
-      className="absolute inset-0 size-full"
-    >
-      <defs>
-        <pattern id="slate-grid" width="10" height="10" patternUnits="userSpaceOnUse">
-          <path d="M10 0H0v10" fill="none" stroke="currentColor" strokeWidth="0.3" />
-        </pattern>
-      </defs>
-
-      <g className="text-rail">
-        <rect width="160" height="90" fill="url(#slate-grid)" />
-        {/* A true circle reads as an oval if the picture is being stretched. */}
-        <circle cx="80" cy="45" r="34" fill="none" stroke="currentColor" strokeWidth="0.4" />
-        <path d="M80 8v74M23 45h114" stroke="currentColor" strokeWidth="0.3" />
-      </g>
-    </svg>
-  )
-}
-
 export function Slate({
   head,
   body,
@@ -50,26 +25,34 @@ export function Slate({
   tuning: boolean
 }) {
   return (
-    <div className="relative flex size-full items-center justify-center overflow-hidden bg-[#101316] p-6">
-      <Pattern />
+    <div className="relative flex size-full items-center justify-center overflow-hidden px-6 py-8">
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          background: 'radial-gradient(70% 90% at 50% 45%, #1b2028 0%, #12151a 45%, #0b0d11 100%)',
+        }}
+      />
 
-      <div className="relative w-full max-w-[46ch] text-center">
-        <h2 className="text-display leading-tight">{head}</h2>
+      <div className="relative w-full max-w-[42ch] text-center">
+        <h2 className="text-display leading-tight text-balance">{head}</h2>
         {body ? (
-          <p className="mx-auto mt-2 text-small leading-relaxed text-muted-foreground">{body}</p>
+          <p className="mx-auto mt-2 text-small leading-relaxed text-balance text-muted-foreground">
+            {body}
+          </p>
         ) : null}
 
         {tuning ? (
           <output
-            className="mx-auto mt-5 block h-0.5 w-32 overflow-hidden rounded-pill bg-rail"
+            className="mx-auto mt-6 block h-0.5 w-28 overflow-hidden rounded-pill bg-rail"
             aria-label="Connecting"
           >
-            <span className="block h-full w-1/3 animate-[slate-sweep_1.4s_ease-in-out_infinite] bg-signal" />
+            <span className="block h-full w-1/3 animate-[slate-sweep_1.4s_ease-in-out_infinite] rounded-pill bg-signal" />
           </output>
         ) : null}
 
         {actions.length > 0 ? (
-          <div className="mt-5 flex flex-wrap justify-center gap-2">
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
             {actions.map((action) => (
               <Button
                 key={action.label}
@@ -83,8 +66,9 @@ export function Slate({
           </div>
         ) : null}
 
-        {reason ? (
-          <p className="tabular mt-5 text-micro text-muted-foreground/60">{reason}</p>
+        {/* The machine-readable cause, for someone who wants to grep a log. */}
+        {reason && reason !== 'ok' ? (
+          <p className="tabular mt-6 text-micro text-muted-foreground/50">{reason}</p>
         ) : null}
       </div>
     </div>

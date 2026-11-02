@@ -28,7 +28,10 @@ export function TopBar({
   onOpenSettings,
 }: TopBarProps) {
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 px-4">
+    <header
+      className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 bg-background/90
+                 px-3 backdrop-blur-sm sm:gap-3 sm:px-4 lg:static lg:backdrop-blur-none"
+    >
       <a
         href="#lineup"
         className="flex items-center gap-2 text-section leading-none"
@@ -38,7 +41,7 @@ export function TopBar({
         <span className="font-medium tracking-tight">Tuner</span>
       </a>
 
-      <div className="relative mx-auto w-full max-w-sm">
+      <div className="relative mx-auto w-full min-w-0 max-w-sm">
         <Search
           aria-hidden
           className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
@@ -54,13 +57,19 @@ export function TopBar({
         />
       </div>
 
-      <Button variant="ghost" size="sm" onClick={onOpenFilters}>
+      <Button variant="ghost" size="sm" onClick={onOpenFilters} className="shrink-0">
         <SlidersHorizontal />
-        <span className="hidden sm:inline">Filters</span>
+        <span className="hidden md:inline">Filters</span>
         {activeFilters > 0 ? <Badge variant="signal">{activeFilters}</Badge> : null}
       </Button>
 
-      <Button variant="ghost" size="icon-sm" onClick={onOpenSettings} aria-label="Settings">
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        onClick={onOpenSettings}
+        aria-label="Settings"
+        className="shrink-0"
+      >
         <Settings2 />
       </Button>
     </header>

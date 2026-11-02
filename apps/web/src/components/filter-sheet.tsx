@@ -70,7 +70,7 @@ export function FilterSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-[21rem] gap-0">
+      <SheetContent side="left" className="w-full gap-0 sm:w-[21rem] sm:max-w-[21rem]">
         <SheetHeader>
           <SheetTitle>Filters</SheetTitle>
           <SheetDescription>Narrow the channel list. Kept for next time.</SheetDescription>

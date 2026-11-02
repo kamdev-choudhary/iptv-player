@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Star } from 'lucide-react'
-import { Button, Empty, PanelScroll, Readout, RowSkeleton, Tally, cn } from '@tuner/ui'
+import { Button, Empty, Readout, RowSkeleton, Tally, cn } from '@tuner/ui'
 import type { ApiChannel, Facets } from '@tuner/shared'
 import { channelSummary, channelTally, heightLabel } from '@/lib/signal.ts'
 import { prefs } from '@/lib/prefs.ts'
@@ -120,14 +120,16 @@ export function Lineup({
   }, [hasMore, onLoadMore])
 
   return (
-    <section aria-label="Channels" className="flex min-h-0 flex-col">
-      <header className="flex h-10 shrink-0 items-baseline gap-2 px-3">
+    <section aria-label="Channels" className="flex flex-col lg:h-full lg:min-h-0">
+      <header className="flex h-11 shrink-0 items-center gap-2 border-b px-4">
         <h2 className="text-small text-muted-foreground">
           {loading ? 'Loading channels' : `${total.toLocaleString()} channels`}
         </h2>
       </header>
 
-      <PanelScroll className="px-1 pb-4">
+      {/* On a phone this is not a scroll container at all: the page is, and a
+          nested one would trap the scroll on the longest list in the app. */}
+      <div className="p-1.5 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain">
         {error ? (
           <Empty
             head="The channel list could not be loaded"
@@ -166,7 +168,7 @@ export function Lineup({
             {loadingMore ? <RowSkeleton /> : null}
           </>
         )}
-      </PanelScroll>
+      </div>
     </section>
   )
 }

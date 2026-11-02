@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { clsx } from 'clsx'
-import { initials, markHue } from '@/lib/signal.ts'
+import { cn } from '@tuner/ui'
+import { initials, markTone } from '@/lib/signal.ts'
 
 /**
  * A channel's logo, or its initials when there is none.
@@ -19,17 +19,17 @@ export function ChannelMark({
   size?: 'sm' | 'md'
 }) {
   const [failed, setFailed] = useState(false)
-  const box = size === 'sm' ? 'size-7 text-micro' : 'size-9 text-small'
+  const box = size === 'sm' ? 'size-8 text-micro' : 'size-10 text-small'
 
   if (!logo || failed) {
     return (
       <span
         aria-hidden
-        className={clsx(
-          'flex shrink-0 items-center justify-center rounded-md font-medium text-foreground/85',
-          box,
-        )}
-        style={{ background: markHue(name) }}
+        className={cn('flex shrink-0 items-center justify-center rounded-lg font-medium', box)}
+        style={{
+          background: markTone(name),
+          color: 'color-mix(in oklab, #eef1f5 80%, transparent)',
+        }}
       >
         {initials(name)}
       </span>
@@ -43,7 +43,7 @@ export function ChannelMark({
       loading="lazy"
       decoding="async"
       onError={() => setFailed(true)}
-      className={clsx('shrink-0 rounded-md bg-accent object-contain p-0.5', box)}
+      className={cn('shrink-0 rounded-lg bg-panel-lift object-contain p-1', box)}
     />
   )
 }

@@ -18,7 +18,13 @@ import { activeFilterCount, prefs } from '@/lib/prefs.ts'
  * Everything else — filters, settings, the sources behind a channel — opens
  * over the top and closes again. The picture is the reason the page exists, so
  * it keeps the room, and the list beside it means choosing what to watch never
- * costs you sight of what you are watching. Below 1024px they stack.
+ * costs you sight of what you are watching.
+ *
+ * The two sizes scroll differently on purpose. On a desktop the page is fixed
+ * to the viewport and each pane scrolls inside itself, so the picture never
+ * leaves the screen. On a phone there is no room for that: the video pins to
+ * the top at its natural aspect ratio and the page scrolls underneath it,
+ * which is what every reading surface on a phone already does.
  */
 
 /** The deep link, read once at startup: `#c=<channel-id>`. */
@@ -121,7 +127,7 @@ export default function App() {
   )
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden">
+    <div className="flex min-h-dvh flex-col lg:h-dvh lg:overflow-hidden">
       <TopBar
         searchRef={searchRef}
         search={search}
@@ -131,12 +137,15 @@ export default function App() {
         onOpenSettings={() => setSettingsOpen(true)}
       />
 
-      <main className="grid min-h-0 flex-1 grid-rows-[minmax(0,2fr)_minmax(0,1fr)] gap-4 px-4 pb-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:grid-rows-1">
-        <div ref={stageRef} className="min-h-0">
+      <main className="flex flex-1 flex-col gap-3 px-3 pb-3 lg:grid lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-4 lg:px-4 lg:pb-4">
+        <div ref={stageRef} className="lg:min-h-0">
           <Stage {...playback} channel={channel.data ?? null} onFullscreen={fullscreen} />
         </div>
 
-        <div id="lineup" className="min-h-0 rounded-lg bg-card">
+        <div
+          id="lineup"
+          className="overflow-hidden rounded-xl border bg-card lg:flex lg:min-h-0 lg:flex-col"
+        >
           <Lineup
             channels={channels}
             facets={facets.data}

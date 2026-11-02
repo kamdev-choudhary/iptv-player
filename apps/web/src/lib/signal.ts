@@ -51,14 +51,28 @@ export function initials(name: string): string {
 }
 
 /**
- * A stable hue per channel, so a name always comes back the same colour. The
- * spread is narrow and desaturated on purpose: these are placeholders behind a
- * dense list, not decoration competing with the picture.
+ * The tones a logo-less channel falls back to.
+ *
+ * A curated set rather than a hue rotation. Rotating the full circle walks
+ * through olive, mustard and brick, which is what made an earlier version of
+ * the list look muddy; these six sit at one lightness and one low chroma, in
+ * the cool half of the wheel plus a single rose, so a column of them reads as
+ * one family instead of a paint chart.
  */
-export function markHue(name: string): string {
+const MARK_TONES = [
+  'oklch(0.38 0.04 250)', // indigo
+  'oklch(0.38 0.04 215)', // blue
+  'oklch(0.38 0.04 192)', // teal
+  'oklch(0.38 0.04 295)', // violet
+  'oklch(0.38 0.04 340)', // rose
+  'oklch(0.38 0.03 160)', // sage
+] as const
+
+/** Stable per name, so a channel always comes back the same colour. */
+export function markTone(name: string): string {
   let hash = 0
   for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) % 997
-  return `oklch(0.42 0.045 ${(hash % 360).toFixed(0)})`
+  return MARK_TONES[hash % MARK_TONES.length]!
 }
 
 /** `1080p`, or an em dash when the resolution is not known. */

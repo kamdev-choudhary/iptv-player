@@ -119,8 +119,10 @@ export function Stage({
   const live = phase === 'live'
 
   return (
-    <section aria-label="Player" className="flex min-h-0 flex-col gap-3">
-      <div className="relative min-h-0 flex-1 overflow-hidden rounded-lg bg-black">
+    <section aria-label="Player" className="flex flex-col gap-3 lg:h-full lg:min-h-0">
+      {/* 16:9 on a phone so the page can scroll past it; on a desktop it takes
+          whatever height the column has left. */}
+      <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black lg:aspect-auto lg:min-h-0 lg:flex-1">
         <video
           ref={videoRef}
           playsInline
@@ -141,7 +143,7 @@ export function Stage({
         )}
       </div>
 
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1">
         <h1 className="min-w-0 flex-1 truncate text-section leading-tight">
           {channel?.name ?? 'Tuner'}
         </h1>
