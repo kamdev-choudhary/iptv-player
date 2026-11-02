@@ -4,7 +4,9 @@ import { fileURLToPath } from 'node:url'
 export default defineConfig({
   resolve: {
     alias: {
-      '@tuner/shared': fileURLToPath(new URL('../../packages/shared/src/index.ts', import.meta.url)),
+      '@tuner/shared': fileURLToPath(
+        new URL('../../packages/shared/src/index.ts', import.meta.url),
+      ),
     },
   },
   test: {

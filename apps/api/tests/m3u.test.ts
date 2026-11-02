@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseM3u, slug } from '../src/lib/m3u.ts'
+import { parseM3u, slug } from '../src/modules/imports/imports.m3u.ts'
 
 /**
  * Real playlists are inconsistent in specific, repeated ways, and each of
@@ -52,7 +52,13 @@ describe('parseM3u', () => {
 
   it('does not record the same address twice', () => {
     const channels = parseM3u(
-      ['#EXTM3U', '#EXTINF:-1,A', 'https://a.example/1.m3u8', '#EXTINF:-1,A', 'https://a.example/1.m3u8'].join('\n'),
+      [
+        '#EXTM3U',
+        '#EXTINF:-1,A',
+        'https://a.example/1.m3u8',
+        '#EXTINF:-1,A',
+        'https://a.example/1.m3u8',
+      ].join('\n'),
     )
     expect(channels[0]?.sources).toHaveLength(1)
   })
@@ -90,9 +96,11 @@ describe('parseM3u', () => {
 
   it('splits headers appended to the URL with a pipe, which are not part of the address', () => {
     const [channel] = parseM3u(
-      ['#EXTM3U', '#EXTINF:-1,Piped', 'https://cdn.example/s.m3u8|User-Agent=VLC&Referer=https://r.example/'].join(
-        '\n',
-      ),
+      [
+        '#EXTM3U',
+        '#EXTINF:-1,Piped',
+        'https://cdn.example/s.m3u8|User-Agent=VLC&Referer=https://r.example/',
+      ].join('\n'),
     )
     expect(channel?.sources[0]).toEqual({
       url: 'https://cdn.example/s.m3u8',
@@ -135,9 +143,13 @@ describe('parseM3u', () => {
 
   it('ignores non-http lines and unknown directives', () => {
     const channels = parseM3u(
-      ['#EXTM3U', '#EXT-X-SOMETHING:1', '#EXTINF:-1,A', 'rtmp://a.example/live', 'https://a.example/1.m3u8'].join(
-        '\n',
-      ),
+      [
+        '#EXTM3U',
+        '#EXT-X-SOMETHING:1',
+        '#EXTINF:-1,A',
+        'rtmp://a.example/live',
+        'https://a.example/1.m3u8',
+      ].join('\n'),
     )
     expect(channels[0]?.sources.map((s) => s.url)).toEqual(['https://a.example/1.m3u8'])
   })

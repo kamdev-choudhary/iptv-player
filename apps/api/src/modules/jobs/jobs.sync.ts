@@ -305,7 +305,10 @@ export async function runSync(log: (m: string) => void = () => {}): Promise<Sync
     await upsertLookups(trx, { countries, categories, languages })
     await upsertChannels(trx, channelRows)
     await upsertSources(trx, sourceRows)
-    const retired = await retireMissingChannels(trx, channelRows.map((c) => c.id))
+    const retired = await retireMissingChannels(
+      trx,
+      channelRows.map((c) => c.id),
+    )
     const disabled = await disableMissingSources(trx, sourceRows)
     return { retired, disabled }
   })

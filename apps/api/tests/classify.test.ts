@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { flagsFor, heightOf, looksLikeHls, playModeFor } from '../src/lib/classify.ts'
-import { decodeCursor, encodeCursor } from '../src/lib/cursor.ts'
+import {
+  flagsFor,
+  heightOf,
+  looksLikeHls,
+  playModeFor,
+} from '../src/modules/sources/sources.classify.ts'
+import { decodeCursor, encodeCursor } from '../src/core/cursor.ts'
 
 describe('flagsFor', () => {
   it('flags plain http, which an https page may not fetch', () => {

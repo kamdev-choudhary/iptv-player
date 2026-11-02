@@ -65,7 +65,10 @@ export interface UpstreamResponse {
   release: () => void
 }
 
-export async function fetchUpstream(url: string, req: UpstreamRequest = {}): Promise<UpstreamResponse> {
+export async function fetchUpstream(
+  url: string,
+  req: UpstreamRequest = {},
+): Promise<UpstreamResponse> {
   const { signal, done } = deadline(req)
   try {
     const response = await fetch(url, {

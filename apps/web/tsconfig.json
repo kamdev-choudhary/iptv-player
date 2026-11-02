@@ -1,34 +1,16 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "lib": [
-      "ES2023",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
-    "types": [
-      "node",
-      "vite/client"
-    ],
+    "types": ["node", "vite/client"],
     "useDefineForClassFields": true,
     "tsBuildInfoFile": "./node_modules/.tmp/web.tsbuildinfo",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@tuner/shared": [
-        "../../packages/shared/src/index.ts"
-      ],
-      "@tuner/ui": [
-        "../../packages/ui/src/index.ts"
-      ]
+      "@/*": ["./src/*"],
+      "@tuner/shared": ["../../packages/shared/src/index.ts"],
+      "@tuner/ui": ["../../packages/ui/src/index.ts"]
     }
   },
-  "include": [
-    "src",
-    "vite.config.ts",
-    "vitest.config.ts",
-    "tests"
-  ]
+  "include": ["src", "vite.config.ts", "vitest.config.ts", "tests"]
 }

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { bestHeight, isMasterPlaylist, parseVariants, rewriteManifest } from '../src/lib/hls.ts'
+import {
+  bestHeight,
+  isMasterPlaylist,
+  parseVariants,
+  rewriteManifest,
+} from '../src/modules/stream/stream.hls.ts'
 
 /**
  * Playlist rewriting is where a stream proxy quietly fails: miss one URI kind
@@ -28,9 +33,15 @@ describe('rewriteManifest', () => {
 
   it('resolves relative, root-relative and absolute URIs alike', () => {
     const out = rewrite(
-      ['#EXTM3U', '#EXTINF:6,', '../a.ts', '#EXTINF:6,', '/b.ts', '#EXTINF:6,', 'https://other.example/c.ts'].join(
-        '\n',
-      ),
+      [
+        '#EXTM3U',
+        '#EXTINF:6,',
+        '../a.ts',
+        '#EXTINF:6,',
+        '/b.ts',
+        '#EXTINF:6,',
+        'https://other.example/c.ts',
+      ].join('\n'),
     )
     expect(out).toContain(encodeURIComponent('https://cdn.example/a.ts'))
     expect(out).toContain(encodeURIComponent('https://cdn.example/b.ts'))
@@ -39,7 +50,9 @@ describe('rewriteManifest', () => {
 
   it('rewrites the AES key URI, without which playback cannot decrypt', () => {
     const out = rewrite(
-      ['#EXTM3U', '#EXT-X-KEY:METHOD=AES-128,URI="key.bin",IV=0x0', '#EXTINF:6,', 'seg.ts'].join('\n'),
+      ['#EXTM3U', '#EXT-X-KEY:METHOD=AES-128,URI="key.bin",IV=0x0', '#EXTINF:6,', 'seg.ts'].join(
+        '\n',
+      ),
     )
     expect(out).toContain('URI="/p/s?u=https%3A%2F%2Fcdn.example%2Flive%2Fkey.bin"')
   })
@@ -50,7 +63,9 @@ describe('rewriteManifest', () => {
   })
 
   it('rewrites the initialisation segment in fMP4 streams', () => {
-    const out = rewrite(['#EXTM3U', '#EXT-X-MAP:URI="init.mp4"', '#EXTINF:6,', 'seg.m4s'].join('\n'))
+    const out = rewrite(
+      ['#EXTM3U', '#EXT-X-MAP:URI="init.mp4"', '#EXTINF:6,', 'seg.m4s'].join('\n'),
+    )
     expect(out).toContain('URI="/p/s?u=https%3A%2F%2Fcdn.example%2Flive%2Finit.mp4"')
   })
 
@@ -84,7 +99,14 @@ describe('rewriteManifest', () => {
   })
 
   it('preserves every tag line and the line count', () => {
-    const input = ['#EXTM3U', '#EXT-X-VERSION:3', '#EXT-X-TARGETDURATION:6', '#EXTINF:6,', 'a.ts', '#EXT-X-ENDLIST']
+    const input = [
+      '#EXTM3U',
+      '#EXT-X-VERSION:3',
+      '#EXT-X-TARGETDURATION:6',
+      '#EXTINF:6,',
+      'a.ts',
+      '#EXT-X-ENDLIST',
+    ]
     const out = rewrite(input.join('\n'))
     expect(out.split('\n')).toHaveLength(input.length)
     expect(out).toContain('#EXT-X-VERSION:3')

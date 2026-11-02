@@ -63,7 +63,10 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     // index tuple, so uniqueness is enforced on a digest instead. Generated and
     // stored, so it cannot drift from the URL it describes.
     .addColumn('url_key', 'text', (c) =>
-      c.notNull().generatedAlwaysAs(sql`md5(url)`).stored(),
+      c
+        .notNull()
+        .generatedAlwaysAs(sql`md5(url)`)
+        .stored(),
     )
     .addColumn('quality', 'text')
     .addColumn('height', 'integer')
@@ -126,7 +129,9 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await sql`create index channels_country_idx on channels (country) where ${visible}`.execute(db)
   await sql`create index channels_categories_idx on channels using gin (categories)`.execute(db)
   await sql`create index channels_languages_idx on channels using gin (languages)`.execute(db)
-  await sql`create index channels_search_idx on channels using gin (search_text gin_trgm_ops)`.execute(db)
+  await sql`create index channels_search_idx on channels using gin (search_text gin_trgm_ops)`.execute(
+    db,
+  )
   await sql`create index channels_updated_idx on channels (updated_at desc)`.execute(db)
   // One index per sort order, each matching the cursor's tie-breakers exactly.
   await sql`

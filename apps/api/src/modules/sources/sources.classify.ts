@@ -10,7 +10,11 @@ export interface SourceFlags {
   isDash: boolean
 }
 
-export function flagsFor(url: string, userAgent?: string | null, referrer?: string | null): SourceFlags {
+export function flagsFor(
+  url: string,
+  userAgent?: string | null,
+  referrer?: string | null,
+): SourceFlags {
   return {
     insecure: /^http:\/\//i.test(url),
     needsHeaders: Boolean(userAgent || referrer),

@@ -23,7 +23,9 @@ export function encodeCursor(cursor: Cursor): string {
 export function decodeCursor(raw: string | undefined): Cursor | null {
   if (!raw) return null
   try {
-    const parsed = cursorSchema.safeParse(JSON.parse(Buffer.from(raw, 'base64url').toString('utf8')))
+    const parsed = cursorSchema.safeParse(
+      JSON.parse(Buffer.from(raw, 'base64url').toString('utf8')),
+    )
     return parsed.success ? parsed.data : null
   } catch {
     // A cursor from an older build, or a hand-edited one: start over rather

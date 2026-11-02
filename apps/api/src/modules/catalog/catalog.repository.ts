@@ -83,7 +83,10 @@ function visibleChannels() {
 }
 
 /** Which column each sort order keys on. All three are non-null integers. */
-const SORT_COLUMN: Record<Exclude<SortKey, 'name'>, 'best_height' | 'source_count' | 'live_count'> = {
+const SORT_COLUMN: Record<
+  Exclude<SortKey, 'name'>,
+  'best_height' | 'source_count' | 'live_count'
+> = {
   quality: 'best_height',
   sources: 'source_count',
   live: 'live_count',
@@ -97,7 +100,9 @@ export async function listChannels(query: ChannelQuery): Promise<Page<ApiChannel
 
   if (query.country) base = base.where('country', '=', query.country)
   if (query.language) {
-    base = base.where(sql<SqlBool>`${sql.ref('languages')} @> array[${sql.val(query.language)}]::text[]`)
+    base = base.where(
+      sql<SqlBool>`${sql.ref('languages')} @> array[${sql.val(query.language)}]::text[]`,
+    )
   }
   if (query.category?.length) {
     base = base.where(sql<SqlBool>`${sql.ref('categories')} && ${sql.val(query.category)}::text[]`)
@@ -176,7 +181,10 @@ export async function listChannels(query: ChannelQuery): Promise<Page<ApiChannel
       key.descending ? sql`${key.expression} desc` : sql`${key.expression} asc`,
     )
   }
-  ordered = ordered.orderBy('name', 'asc').orderBy('id', 'asc').limit(query.limit + 1)
+  ordered = ordered
+    .orderBy('name', 'asc')
+    .orderBy('id', 'asc')
+    .limit(query.limit + 1)
 
   const [found, total] = await Promise.all([ordered.execute(), totalPromise])
 
@@ -314,7 +322,10 @@ export async function channelDetail(id: string): Promise<ChannelDetail | null> {
 
 /** Every source for a channel, enabled or not. The admin view wants both. */
 export async function adminSources(channelId: string): Promise<ApiSource[]> {
-  const rows = await sourcesQuery().where('s.channel_id', '=', channelId).orderBy(SOURCE_ORDER).execute()
+  const rows = await sourcesQuery()
+    .where('s.channel_id', '=', channelId)
+    .orderBy(SOURCE_ORDER)
+    .execute()
   return rows.map((r) => toApiSource(r as SourceWithHealth))
 }
 
@@ -394,6 +405,8 @@ export async function facets(): Promise<Facets> {
     sourceCount: t?.sources ?? 0,
     liveSourceCount: t?.live ?? 0,
     updatedAt: t?.updated ? new Date(t.updated).toISOString() : null,
-    lastHealthCheckAt: lastCheck?.at ? new Date(lastCheck.at as unknown as string).toISOString() : null,
+    lastHealthCheckAt: lastCheck?.at
+      ? new Date(lastCheck.at as unknown as string).toISOString()
+      : null,
   }
 }

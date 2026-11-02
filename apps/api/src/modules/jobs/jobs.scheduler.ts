@@ -32,10 +32,16 @@ export function startScheduler(log: FastifyBaseLogger) {
   const sweep = healthRunOptions.parse({})
 
   const jobs = [
-    new Cron(env.SYNC_CRON, { name: 'sync', protect: true }, guard('sync', (l) => runSync(l))),
-    new Cron(env.HEALTH_CRON, { name: 'health', protect: true }, guard('health', (l) =>
-      runHealthSweep(sweep, l),
-    )),
+    new Cron(
+      env.SYNC_CRON,
+      { name: 'sync', protect: true },
+      guard('sync', (l) => runSync(l)),
+    ),
+    new Cron(
+      env.HEALTH_CRON,
+      { name: 'health', protect: true },
+      guard('health', (l) => runHealthSweep(sweep, l)),
+    ),
   ]
 
   for (const job of jobs) {

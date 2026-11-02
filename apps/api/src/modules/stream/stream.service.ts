@@ -67,8 +67,7 @@ export async function resolveSource(id: number): Promise<ProxySource> {
 
 /** What the controller should send: either a rewritten playlist, or bytes. */
 export type Fetched =
-  | { kind: 'manifest'; body: string }
-  | { kind: 'stream'; response: Response; release: () => void }
+  { kind: 'manifest'; body: string } | { kind: 'stream'; response: Response; release: () => void }
 
 export class UpstreamError extends Error {
   constructor(public status: number) {

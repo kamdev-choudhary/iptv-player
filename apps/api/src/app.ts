@@ -11,19 +11,31 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from 'fastify-type-provider-zod'
-import { corsOrigin, env, isProduction } from './env.ts'
-import { db } from './db/index.ts'
-import { adminRoutes } from './routes/admin.ts'
-import { catalogRoutes } from './routes/catalog.ts'
-import { streamRoutes } from './routes/stream.ts'
+import { requireAdmin } from './core/auth.ts'
+import { db } from './core/db/index.ts'
+import { corsOrigin, env, isProduction } from './core/env.ts'
+import { statusOf } from './core/errors.ts'
+import { catalogRoutes } from './modules/catalog/catalog.routes.ts'
+import { importsRoutes } from './modules/imports/imports.routes.ts'
+import { jobsRoutes } from './modules/jobs/jobs.routes.ts'
+import { sourcesRoutes } from './modules/sources/sources.routes.ts'
+import { streamRoutes } from './modules/stream/stream.routes.ts'
 
+/**
+ * Where the modules are mounted.
+ *
+ * Three scopes, because they want different things: the read API wants ETags
+ * and a shared cache, the proxy wants neither, and the write API wants a token
+ * on every request. A new admin module is protected by being registered in the
+ * admin scope rather than by remembering to add a hook.
+ */
 export async function buildServer(): Promise<FastifyInstance> {
   const app = Fastify({
     logger: {
       level: env.LOG_LEVEL,
-      transport: isProduction ? undefined : { target: 'pino-pretty', options: { singleLine: true } },
-      // A proxied segment URL carries the upstream address; useful in a log,
-      // and not something to repeat for every request at info level.
+      transport: isProduction
+        ? undefined
+        : { target: 'pino-pretty', options: { singleLine: true } },
       redact: { paths: ['req.headers.authorization'], censor: '[redacted]' },
     },
     // Proxied behind Caddy or nginx, so the client's real IP comes from a header.
@@ -32,6 +44,9 @@ export async function buildServer(): Promise<FastifyInstance> {
     bodyLimit: 16 * 1024 * 1024,
     // Segment responses can be slow without being stuck.
     requestTimeout: 0,
+    // A segment request per viewer every few seconds is not worth a log line.
+    // Fastify 5 deprecates this in favour of `logController`, whose type wants
+    // the whole controller rather than this one field; revisit at Fastify 6.
     disableRequestLogging: isProduction,
   })
 
@@ -41,20 +56,24 @@ export async function buildServer(): Promise<FastifyInstance> {
   app.setValidatorCompiler(validatorCompiler)
   app.setSerializerCompiler(serializerCompiler)
 
-  app.setErrorHandler((err: FastifyError, req, reply) => {
-    if (hasZodFastifySchemaValidationErrors(err)) {
+  app.setErrorHandler((error: FastifyError, request, reply) => {
+    if (hasZodFastifySchemaValidationErrors(error)) {
       return reply.code(400).send({
         error: 'Request does not match the schema',
-        issues: err.validation.map((v) => ({ path: v.instancePath, message: v.message })),
+        issues: error.validation.map((v) => ({ path: v.instancePath, message: v.message })),
       })
     }
-    if (isResponseSerializationError(err)) {
-      req.log.error({ err, route: err.method, url: err.url }, 'response failed its own schema')
+    if (isResponseSerializationError(error)) {
+      request.log.error({ err: error, url: error.url }, 'response failed its own schema')
       return reply.code(500).send({ error: 'The server built a response it could not validate' })
     }
-    const status = err.statusCode && err.statusCode >= 400 ? err.statusCode : 500
-    if (status >= 500) req.log.error({ err }, 'request failed')
-    return reply.code(status).send({ error: status >= 500 ? 'Internal error' : err.message })
+
+    const known = statusOf(error)
+    if (known) return reply.code(known).send({ error: error.message })
+
+    const status = error.statusCode && error.statusCode >= 400 ? error.statusCode : 500
+    if (status >= 500) request.log.error({ err: error }, 'request failed')
+    return reply.code(status).send({ error: status >= 500 ? 'Internal error' : error.message })
   })
 
   await app.register(helmet, {
@@ -80,21 +99,32 @@ export async function buildServer(): Promise<FastifyInstance> {
     timeWindow: '1 minute',
   })
 
-  // ETags on the catalog; never on a stream, where the body is the point.
+  // Read API: ETags and a short shared cache.
   await app.register(async (scope) => {
     await scope.register(etag, { weak: true })
     await scope.register(catalogRoutes, { prefix: '/api' })
   })
 
+  // The proxy: no ETag, because the body is the point.
   await app.register(streamRoutes, { prefix: '/stream' })
-  await app.register(adminRoutes, { prefix: '/admin' })
 
-  app.get('/health', async (_req, reply) => {
+  // Write API: one token check for every module mounted inside.
+  await app.register(
+    async (scope) => {
+      await scope.register(requireAdmin)
+      await scope.register(sourcesRoutes)
+      await scope.register(importsRoutes, { prefix: '/import' })
+      await scope.register(jobsRoutes, { prefix: '/jobs' })
+    },
+    { prefix: '/admin' },
+  )
+
+  app.get('/health', async (_request, reply) => {
     try {
       await db.selectFrom('channels').select(db.fn.countAll().as('n')).executeTakeFirst()
       return { ok: true, version: process.env.npm_package_version ?? null }
-    } catch (err) {
-      app.log.error({ err }, 'health check could not reach the database')
+    } catch (error) {
+      app.log.error({ err: error }, 'health check could not reach the database')
       return reply.code(503).send({ ok: false, error: 'database unreachable' })
     }
   })
@@ -104,15 +134,14 @@ export async function buildServer(): Promise<FastifyInstance> {
    * with the API and the proxy — no CORS to configure, and one TLS certificate.
    */
   if (env.SERVE_WEB) {
-    // Resolved against the working directory, not this module: the path has
-    // to mean the same thing whether it is `tsx src/index.ts` or `node dist/`.
+    // Resolved against the working directory, not this module: the path has to
+    // mean the same thing whether it is `tsx src/index.ts` or `node dist/`.
     const root = isAbsolute(env.WEB_ROOT) ? env.WEB_ROOT : resolve(process.cwd(), env.WEB_ROOT)
     await app.register(fastifyStatic, { root, wildcard: false })
     // The client is a single page; unknown paths are its routes, not 404s.
-    app.setNotFoundHandler(async (req, reply) => {
-      if (req.url.startsWith('/api') || req.url.startsWith('/stream') || req.url.startsWith('/admin')) {
-        return reply.code(404).send({ error: 'No such route' })
-      }
+    app.setNotFoundHandler(async (request, reply) => {
+      const api = ['/api', '/stream', '/admin', '/health'].some((p) => request.url.startsWith(p))
+      if (api) return reply.code(404).send({ error: 'No such route' })
       return reply.sendFile('index.html')
     })
   }

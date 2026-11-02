@@ -49,45 +49,30 @@
   },
   "overrides": [
     {
-      "files": [
-        "**/*.test.ts",
-        "**/*.test.tsx"
-      ],
+      "files": ["**/*.test.ts", "**/*.test.tsx"],
       "rules": {
         "typescript/no-explicit-any": "off"
       }
     },
     {
-      "files": [
-        "apps/api/**"
-      ],
+      "files": ["apps/api/**"],
       "env": {
         "node": true
       }
     },
     {
-      "files": [
-        "apps/web/**",
-        "packages/ui/**"
-      ],
+      "files": ["apps/web/**", "packages/ui/**"],
       "env": {
         "browser": true
       }
     },
     {
-      "files": [
-        "packages/ui/src/dialog.tsx"
-      ],
+      "files": ["packages/ui/src/dialog.tsx"],
       "rules": {
         "jsx-a11y/click-events-have-key-events": "off",
         "jsx-a11y/no-noninteractive-element-interactions": "off"
       }
     }
   ],
-  "ignorePatterns": [
-    "dist",
-    "node_modules",
-    ".turbo",
-    "coverage"
-  ]
+  "ignorePatterns": ["dist", "node_modules", ".turbo", "coverage"]
 }

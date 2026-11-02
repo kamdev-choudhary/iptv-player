@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { decodeUrl, encodeUrl, sign, verify } from '../src/lib/sign.ts'
+import { decodeUrl, encodeUrl, sign, verify } from '../src/modules/stream/stream.sign.ts'
 
 /**
  * The signature is the only thing standing between the segment route and an

@@ -1,6 +1,7 @@
 import { sql } from 'kysely'
 import type { JobName, JobRun } from '@tuner/shared'
 import { db } from '../../core/db/index.ts'
+import { ConflictError } from '../../core/errors.ts'
 import type { JobRunRow } from '../../core/db/schema.ts'
 
 /**
@@ -13,7 +14,7 @@ import type { JobRunRow } from '../../core/db/schema.ts'
  * holding it goes away.
  */
 
-export class JobBusyError extends Error {
+export class JobBusyError extends ConflictError {
   constructor(public job: JobName) {
     super(`${job} is already running`)
     this.name = 'JobBusyError'
@@ -65,7 +66,11 @@ export async function runJob(job: JobName, body: JobBody): Promise<JobRun> {
       const stats = await body(log)
       const finished = await conn
         .updateTable('job_runs')
-        .set({ status: 'ok', finished_at: new Date().toISOString(), stats: sql`${JSON.stringify(stats)}::jsonb` })
+        .set({
+          status: 'ok',
+          finished_at: new Date().toISOString(),
+          stats: sql`${JSON.stringify(stats)}::jsonb`,
+        })
         .where('id', '=', run.id)
         .returningAll()
         .executeTakeFirstOrThrow()
@@ -74,7 +79,11 @@ export async function runJob(job: JobName, body: JobBody): Promise<JobRun> {
       const message = err instanceof Error ? `${err.message}\n${err.stack ?? ''}` : String(err)
       await conn
         .updateTable('job_runs')
-        .set({ status: 'failed', finished_at: new Date().toISOString(), error: message.slice(0, 8000) })
+        .set({
+          status: 'failed',
+          finished_at: new Date().toISOString(),
+          error: message.slice(0, 8000),
+        })
         .where('id', '=', run.id)
         .execute()
       throw err

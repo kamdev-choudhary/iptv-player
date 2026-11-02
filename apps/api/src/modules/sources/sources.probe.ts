@@ -1,6 +1,11 @@
 import type { HealthReason, ProbeResult } from '@tuner/shared'
 import { looksLikeHls } from './sources.classify.ts'
-import { bestHeight, isMasterPlaylist, looksLikePlaylist, parseVariants } from '../stream/stream.hls.ts'
+import {
+  bestHeight,
+  isMasterPlaylist,
+  looksLikePlaylist,
+  parseVariants,
+} from '../stream/stream.hls.ts'
 import { fetchUpstream, readCapped } from '../../core/upstream.ts'
 
 /**
@@ -37,7 +42,7 @@ function corsAllows(headers: Headers) {
 
 function reasonForStatus(status: number, needsHeaders: boolean): HealthReason {
   if (status === 404 || status === 410) return 'gone'
-  if (status === 401 || status === 403) return (needsHeaders ? 'headers' : 'forbidden')
+  if (status === 401 || status === 403) return needsHeaders ? 'headers' : 'forbidden'
   if (status === 451) return 'forbidden'
   if (status === 408 || status === 504) return 'timeout'
   return 'network'
@@ -94,7 +99,15 @@ export async function probeSource(input: ProbeInput): Promise<ProbeResult> {
     // progressive stream the proxy can relay, so do not read it.
     if (!looksLikeHls(finalUrl)) {
       await response.body?.cancel().catch(() => {})
-      return { ok: true, reason: 'ok', status: response.status, latencyMs, height: null, cors, variants: [] }
+      return {
+        ok: true,
+        reason: 'ok',
+        status: response.status,
+        latencyMs,
+        height: null,
+        cors,
+        variants: [],
+      }
     }
 
     const body = await readCapped(response, 512_000)

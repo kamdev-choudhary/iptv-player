@@ -21,9 +21,7 @@ export async function listChannels(
   return service.listChannels(request.query)
 }
 
-export async function channelsByIds(
-  request: FastifyRequest<{ Body: { ids: string[] } }>,
-) {
+export async function channelsByIds(request: FastifyRequest<{ Body: { ids: string[] } }>) {
   return { items: await service.channelsByIds(request.body.ids) }
 }
 

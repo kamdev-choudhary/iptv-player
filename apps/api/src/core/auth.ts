@@ -1,5 +1,6 @@
 import { timingSafeEqual } from 'node:crypto'
 import type { FastifyPluginAsync } from 'fastify'
+import fp from 'fastify-plugin'
 import { env } from './env.ts'
 
 /**
@@ -38,7 +39,13 @@ const plugin: FastifyPluginAsync = async (app) => {
 }
 
 /**
- * Deliberately not wrapped by fastify-plugin: these hooks must stay inside the
- * scope that registers them rather than leaking out to the read API.
+ * Wrapped by fastify-plugin, which is load-bearing here.
+ *
+ * Without it, `register` gives this plugin its own encapsulated context and
+ * the hooks apply only to routes registered *inside it* — which is none. The
+ * admin modules are siblings, so they would be served with no token check at
+ * all. With `fp` the hooks attach to the enclosing scope instead, and because
+ * that scope is itself the encapsulated `/admin` plugin, they reach every
+ * admin module and nothing else.
  */
-export const requireAdmin = plugin
+export const requireAdmin = fp(plugin, { name: 'require-admin' })

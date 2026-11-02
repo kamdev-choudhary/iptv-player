@@ -71,4 +71,8 @@ export const isProduction = env.NODE_ENV === 'production'
 
 /** `*` or an explicit allow-list, in the shape @fastify/cors wants. */
 export const corsOrigin: string | string[] | boolean =
-  env.CORS_ORIGIN === '*' ? true : env.CORS_ORIGIN.split(',').map((s) => s.trim()).filter(Boolean)
+  env.CORS_ORIGIN === '*'
+    ? true
+    : env.CORS_ORIGIN.split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)

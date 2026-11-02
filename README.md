@@ -13,13 +13,13 @@ The previous version built a JSON index at deploy time and shipped it to the
 browser. That is the cheapest possible way to host this, and it has three
 limits that no amount of client-side work can get past:
 
-| Limit | Why a browser cannot solve it | What the server does |
-| --- | --- | --- |
-| Plain `http://` sources | An `https` page may not fetch them. Mixed content is blocked before a request leaves the tab. | Fetches over http, serves over https. |
-| Cross-origin refusal | No `Access-Control-Allow-Origin` means the response is discarded unread. | CORS does not apply server to server. |
-| Header-gated sources | Some broadcasters answer only a particular `User-Agent` or `Referer`, and JavaScript may not set either. | Sets them upstream. |
-| Dead sources | Roughly half of any public list is unreachable at a given moment, and there is no way to know which half without asking. | Probes every source on a schedule and ranks the list by what answered. |
-| A changed stream address | It is baked into a build artifact. | It is a row. `PATCH` it and the next request serves the new one. |
+| Limit                    | Why a browser cannot solve it                                                                                            | What the server does                                                   |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| Plain `http://` sources  | An `https` page may not fetch them. Mixed content is blocked before a request leaves the tab.                            | Fetches over http, serves over https.                                  |
+| Cross-origin refusal     | No `Access-Control-Allow-Origin` means the response is discarded unread.                                                 | CORS does not apply server to server.                                  |
+| Header-gated sources     | Some broadcasters answer only a particular `User-Agent` or `Referer`, and JavaScript may not set either.                 | Sets them upstream.                                                    |
+| Dead sources             | Roughly half of any public list is unreachable at a given moment, and there is no way to know which half without asking. | Probes every source on a schedule and ranks the list by what answered. |
+| A changed stream address | It is baked into a build artifact.                                                                                       | It is a row. `PATCH` it and the next request serves the new one.       |
 
 The honest cost: once a stream is proxied, every byte of video crosses your
 box. The client therefore tries the broadcaster directly first and only falls
@@ -31,13 +31,34 @@ rather than spending a failed attempt discovering it.
 
 ```
 apps/
-  api/      Fastify: catalog API, stream proxy, admin writes, scheduled jobs
-  web/      React client: the player and the channel list
+  api/src/
+    core/           env, database, errors, the admin guard, upstream fetching
+    modules/
+      catalog/      routes · controller · service · repository · stats
+      stream/       routes · controller · service · hls · sign
+      sources/      routes · controller · service · probe · classify
+      imports/      routes · controller · service · m3u
+      jobs/         routes · controller · service · sync · health · scheduler
+    app.ts          where the modules are mounted
+  web/src/          React client: the player and the channel list
 packages/
-  shared/   Zod schemas — the one contract both sides validate against
-  ui/       shadcn/ui primitives, themed, plus this console's own vocabulary
-deploy/     systemd unit and Caddyfile for a single VPS
+  shared/           zod schemas — the one contract both sides validate against
+  ui/               shadcn/ui primitives, themed, plus this app's own vocabulary
+deploy/             systemd unit and Caddyfile for a single VPS
 ```
+
+Each backend module owns everything about itself, in four layers:
+
+| File              | Knows about                                                   |
+| ----------------- | ------------------------------------------------------------- |
+| `*.routes.ts`     | paths, methods, the zod schemas, rate limits                  |
+| `*.controller.ts` | request and reply — nothing that would still be true in a CLI |
+| `*.service.ts`    | the rules; the module's public surface for other modules      |
+| `*.repository.ts` | SQL                                                           |
+
+Writes are mounted inside one `/admin` scope that applies the token check, so a
+new admin module is protected by where it is registered rather than by
+remembering to add a hook.
 
 ## Running it
 
@@ -89,7 +110,7 @@ reinstates things often enough to matter.
 ## The probe sweep
 
 `pnpm health` asks each source whether it is alive **from the server's point of
-view**, which is all the proxy needs. Whether a *browser* could fetch it
+view**, which is all the proxy needs. Whether a _browser_ could fetch it
 directly is a separate question, answered by recording whether the origin sent
 a usable `Access-Control-Allow-Origin`. The two are stored apart, so the client
 is never told to retry something that cannot work.

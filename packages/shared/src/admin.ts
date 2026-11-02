@@ -86,7 +86,9 @@ export const probeResult = z.object({
   height: z.number().int().positive().nullable(),
   cors: z.boolean().nullable(),
   /** Variant playlists found, so an operator can see what they are adding. */
-  variants: z.array(z.object({ height: z.number().int().nullable(), bandwidth: z.number().int().nullable() })),
+  variants: z.array(
+    z.object({ height: z.number().int().nullable(), bandwidth: z.number().int().nullable() }),
+  ),
 })
 export type ProbeResult = z.infer<typeof probeResult>
 

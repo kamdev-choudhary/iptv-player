@@ -19,7 +19,10 @@ describe('channelQuery', () => {
 
   it('accepts one category or several, and always yields an array', () => {
     expect(channelQuery.parse({ category: 'news' }).category).toEqual(['news'])
-    expect(channelQuery.parse({ category: ['news', 'sports'] }).category).toEqual(['news', 'sports'])
+    expect(channelQuery.parse({ category: ['news', 'sports'] }).category).toEqual([
+      'news',
+      'sports',
+    ])
   })
 
   it('upper-cases a country code so the filter matches what is stored', () => {
@@ -42,7 +45,12 @@ describe('streamUrl', () => {
   })
 
   it('refuses a scheme the proxy could not fetch', () => {
-    for (const bad of ['rtmp://a/live', 'file:///etc/passwd', 'javascript:alert(1)', 'a.example/s']) {
+    for (const bad of [
+      'rtmp://a/live',
+      'file:///etc/passwd',
+      'javascript:alert(1)',
+      'a.example/s',
+    ]) {
       expect(streamUrl.safeParse(bad).success).toBe(false)
     }
   })
