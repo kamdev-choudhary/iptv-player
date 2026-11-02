@@ -1,0 +1,10 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# pnpm blocks postinstall scripts by default. These two compile native
+# binaries and genuinely need to run: esbuild backs tsup and Vite, and oxide
+# is Tailwind 4's compiler.
+allowBuilds:
+  esbuild: true
+  '@tailwindcss/oxide': true

@@ -1,0 +1,43 @@
+{
+  "name": "@tuner/api",
+  "private": true,
+  "version": "3.0.0",
+  "type": "module",
+  "description": "Tuner API: Postgres catalog, health prober and stream proxy.",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=../../.env src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsup",
+    "lint": "tsc --noEmit",
+    "migrate": "tsx --env-file-if-exists=../../.env src/db/migrate.ts up",
+    "migrate:down": "tsx --env-file-if-exists=../../.env src/db/migrate.ts down",
+    "sync": "tsx --env-file-if-exists=../../.env src/cli/sync.ts",
+    "health": "tsx --env-file-if-exists=../../.env src/cli/health.ts",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules/.tmp .turbo"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.3.1",
+    "@fastify/etag": "^6.2.1",
+    "@fastify/helmet": "^13.2.0",
+    "@fastify/rate-limit": "^11.2.1",
+    "@fastify/static": "^10.1.8",
+    "croner": "^11.0.0",
+    "fastify": "^5.12.7",
+    "fastify-type-provider-zod": "^7.0.0",
+    "kysely": "^0.29.8",
+    "pg": "^8.23.1",
+    "undici": "^8.12.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tuner/shared": "workspace:*",
+    "@types/node": "^22.18.9",
+    "@types/pg": "^8.15.6",
+    "pino-pretty": "^13.2.0",
+    "tsup": "^9.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "lib": ["ES2023"],
+    "tsBuildInfoFile": "./node_modules/.tmp/api.tsbuildinfo",
+    "paths": {
+      "@tuner/shared": ["../../packages/shared/src/index.ts"]
+    }
+  },
+  "include": ["src", "tsup.config.ts"]
+}

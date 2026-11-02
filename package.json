@@ -4,26 +4,23 @@
   "version": "3.0.0",
   "type": "module",
   "description": "Self-hosted IPTV player: React client, Fastify API, Postgres catalog.",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "packageManager": "pnpm@12.14.0",
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "dev": "npm run dev --workspaces --if-present",
-    "dev:api": "npm run dev -w @tuner/api",
-    "dev:web": "npm run dev -w @tuner/web",
-    "build": "npm run build -w @tuner/api && npm run build -w @tuner/web",
-    "lint": "npm run lint --workspaces --if-present",
-    "migrate": "npm run migrate -w @tuner/api",
-    "migrate:down": "npm run migrate:down -w @tuner/api",
-    "sync": "npm run sync -w @tuner/api",
-    "health": "npm run health -w @tuner/api"
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "migrate": "pnpm --filter @tuner/api migrate",
+    "migrate:down": "pnpm --filter @tuner/api migrate:down",
+    "sync": "pnpm --filter @tuner/api sync",
+    "health": "pnpm --filter @tuner/api health"
   },
   "devDependencies": {
-    "npm-run-all2": "^8.0.4",
+    "turbo": "^2.11.10",
     "typescript": "^5.9.3"
   }
 }
