@@ -1,5 +1,16 @@
-import type { ComponentProps, ReactNode } from 'react'
+import { useState, type ComponentProps, type ReactNode } from 'react'
+import { Check, ChevronsUpDown } from 'lucide-react'
 import { cn } from './lib/utils.ts'
+import { Button } from './components/ui/button.tsx'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from './components/ui/command.tsx'
+import { Popover, PopoverContent, PopoverTrigger } from './components/ui/popover.tsx'
 import { Checkbox } from './components/ui/checkbox.tsx'
 import { Label } from './components/ui/label.tsx'
 import { Separator } from './components/ui/separator.tsx'
@@ -22,12 +33,16 @@ import {
  */
 
 /**
- * A select that takes its options as data.
+ * A select that takes its options as data, and filters itself once the list is
+ * too long to scan.
  *
- * shadcn's Select is a composition of five parts, which is the right shape for
- * a bespoke menu and the wrong one for a filter rendered from a facet list.
- * This wraps it, keeps the Radix behaviour — keyboard, typeahead, portalled
- * listbox — and takes an array.
+ * Two behaviours behind one component, because they are one control as far as
+ * a caller is concerned. Under the threshold it is a plain listbox. Over it —
+ * 180 countries, 200 languages — a listbox is the wrong tool: you cannot find
+ * "Netherlands" in it without reading, so it becomes a combobox with a filter.
+ *
+ * Both open in a popover anchored to the trigger with an offset, so the list
+ * sits above or below the field and never covers it.
  */
 export interface PanelSelectOption {
   value: string
@@ -46,10 +61,31 @@ export interface PanelSelectProps {
   className?: string
   'aria-label'?: string
   disabled?: boolean
+  /** Overrides the length threshold either way. */
+  searchable?: boolean
 }
 
 /** Radix rejects an empty option value, so "no filter" needs a real one. */
 export const ANY_OPTION = '__any__'
+
+/** Above this many options, reading the list costs more than typing. */
+const SEARCH_THRESHOLD = 12
+
+/** Enough rows to show the shape of the list, few enough to stay a popover. */
+const LIST_HEIGHT = 'max-h-64'
+
+function OptionRow({ option }: { option: PanelSelectOption }) {
+  return (
+    <span className="flex w-full min-w-0 items-center gap-2">
+      <span className="min-w-0 flex-1 truncate">{option.label}</span>
+      {option.count === undefined ? null : (
+        <span className="tabular shrink-0 text-micro text-muted-foreground">
+          {option.count.toLocaleString()}
+        </span>
+      )}
+    </span>
+  )
+}
 
 export function PanelSelect({
   value,
@@ -59,8 +95,25 @@ export function PanelSelect({
   id,
   className,
   disabled,
+  searchable,
   ...rest
 }: PanelSelectProps) {
+  const filterable = searchable ?? options.length > SEARCH_THRESHOLD
+  if (filterable) {
+    return (
+      <PanelCombobox
+        value={value}
+        onValueChange={onValueChange}
+        options={options}
+        placeholder={placeholder}
+        id={id}
+        className={className}
+        disabled={disabled}
+        aria-label={rest['aria-label']}
+      />
+    )
+  }
+
   return (
     <SelectRoot
       value={value === '' ? ANY_OPTION : value}
@@ -70,26 +123,106 @@ export function PanelSelect({
       <SelectTrigger
         id={id}
         aria-label={rest['aria-label']}
-        className={cn('h-8 w-full text-small', className)}
+        className={cn('h-9 w-full text-small', className)}
       >
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent className="max-h-72">
+      {/* `popper` anchors to the trigger and flips when there is no room below;
+          the default would lay the list over the field. */}
+      <SelectContent position="popper" sideOffset={6} className={LIST_HEIGHT}>
         {placeholder ? <SelectItem value={ANY_OPTION}>{placeholder}</SelectItem> : null}
         {options.map((option) => (
           <SelectItem key={option.value} value={option.value}>
-            <span className="flex w-full items-center gap-2">
-              <span className="flex-1 truncate">{option.label}</span>
-              {option.count === undefined ? null : (
-                <span className="tabular text-micro text-muted-foreground">
-                  {option.count.toLocaleString()}
-                </span>
-              )}
-            </span>
+            <OptionRow option={option} />
           </SelectItem>
         ))}
       </SelectContent>
     </SelectRoot>
+  )
+}
+
+function PanelCombobox({
+  value,
+  onValueChange,
+  options,
+  placeholder,
+  id,
+  className,
+  disabled,
+  ...rest
+}: Omit<PanelSelectProps, 'searchable'>) {
+  const [open, setOpen] = useState(false)
+  const selected = options.find((option) => option.value === value)
+
+  const choose = (next: string) => {
+    onValueChange(next === value ? '' : next)
+    setOpen(false)
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          id={id}
+          type="button"
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          aria-label={rest['aria-label']}
+          disabled={disabled}
+          className={cn(
+            'h-9 w-full justify-between px-3 text-small font-normal',
+            !selected && 'text-muted-foreground',
+            className,
+          )}
+        >
+          <span className="min-w-0 truncate">{selected?.label ?? placeholder ?? 'Any'}</span>
+          <ChevronsUpDown className="shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+
+      <PopoverContent
+        align="start"
+        sideOffset={6}
+        collisionPadding={12}
+        // Matches the field, so the popover reads as an extension of it.
+        className="w-(--radix-popover-trigger-width) p-0"
+      >
+        <Command
+          filter={(itemValue, search) =>
+            itemValue.toLowerCase().includes(search.toLowerCase()) ? 1 : 0
+          }
+        >
+          <CommandInput placeholder={placeholder ?? 'Search'} className="h-9" />
+          <CommandList className={LIST_HEIGHT}>
+            <CommandEmpty className="py-6 text-center text-small text-muted-foreground">
+              Nothing matches.
+            </CommandEmpty>
+            <CommandGroup>
+              {placeholder ? (
+                <CommandItem value={placeholder} onSelect={() => choose('')}>
+                  <Check className={cn('shrink-0', value ? 'opacity-0' : 'opacity-100')} />
+                  <span className="text-muted-foreground">{placeholder}</span>
+                </CommandItem>
+              ) : null}
+              {options.map((option) => (
+                <CommandItem
+                  key={option.value}
+                  // cmdk filters on this string, so it has to be the label.
+                  value={option.label}
+                  onSelect={() => choose(option.value)}
+                >
+                  <Check
+                    className={cn('shrink-0', value === option.value ? 'opacity-100' : 'opacity-0')}
+                  />
+                  <OptionRow option={option} />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   )
 }
 
