@@ -7,7 +7,7 @@ import {
   initials,
   latencyLabel,
   sourceTally,
-} from './signal.ts'
+} from '@/lib/signal.ts'
 
 /**
  * The tally mark is the one device the whole panel is built on, so the mapping

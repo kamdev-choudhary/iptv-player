@@ -1,10 +1,10 @@
 import { Cron } from 'croner'
 import type { FastifyBaseLogger } from 'fastify'
 import { healthRunOptions } from '@tuner/shared'
-import { env } from './env.ts'
-import { runHealthSweep } from './services/health.ts'
-import { JobBusyError, runJob } from './services/jobs.ts'
-import { runSync } from './services/sync.ts'
+import { env } from '../../core/env.ts'
+import { runHealthSweep } from './jobs.health.ts'
+import { JobBusyError, runJob } from './jobs.service.ts'
+import { runSync } from './jobs.sync.ts'
 
 /**
  * The two jobs that keep the catalog true: a nightly pull from upstream, and a

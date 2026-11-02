@@ -1,4 +1,4 @@
-import { env } from '../env.ts'
+import { env } from './env.ts'
 
 /**
  * One place to reach a broadcaster from. Two things here matter more than they

@@ -16,7 +16,7 @@ export default defineConfig({
       STREAM_SECRET: 'test-secret-at-least-16-chars-long',
       NODE_ENV: 'test',
     },
-    include: ['src/**/*.test.ts'],
+    include: ['tests/**/*.test.ts'],
     // The suite is deliberately all pure functions: playlist rewriting, M3U
     // parsing, cursors and signing. Anything needing Postgres belongs in an
     // integration run, not in the loop that has to stay fast.

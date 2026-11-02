@@ -1,10 +1,10 @@
 import { sql, type Transaction } from 'kysely'
 import { z } from 'zod'
-import { db, type Database } from '../db/index.ts'
-import { env } from '../env.ts'
-import { flagsFor, heightOf } from '../lib/classify.ts'
-import { slug } from '../lib/m3u.ts'
-import { refreshChannelStats, refreshSearchText } from './stats.ts'
+import { db, type Database } from '../../core/db/index.ts'
+import { env } from '../../core/env.ts'
+import { flagsFor, heightOf } from '../sources/sources.classify.ts'
+import { slug } from '../imports/imports.m3u.ts'
+import { refreshChannelStats, refreshSearchText } from '../catalog/catalog.stats.ts'
 
 /**
  * Pulls the iptv-org database into Postgres.

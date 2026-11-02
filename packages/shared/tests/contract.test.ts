@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { channelQuery, m3uImport, sourceInput, streamUrl } from './index.ts'
+import { channelQuery, m3uImport, sourceInput, streamUrl } from '../src/index.ts'
 
 /**
  * The contract is the one place the client and the API have to agree, so these

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { decideNextAttempt, describeFailure } from './failover.ts'
+import { decideNextAttempt, describeFailure } from '@/lib/failover.ts'
 
 /**
  * The order of attempts is the thing most worth getting right: it decides

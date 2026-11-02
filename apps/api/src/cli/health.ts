@@ -1,7 +1,7 @@
 import { healthRunOptions } from '@tuner/shared'
-import { closeDb } from '../db/index.ts'
-import { JobBusyError, runJob } from '../services/jobs.ts'
-import { runHealthSweep } from '../services/health.ts'
+import { closeDb } from '../core/db/index.ts'
+import { JobBusyError, runJob } from '../modules/jobs/jobs.service.ts'
+import { runHealthSweep } from '../modules/jobs/jobs.health.ts'
 
 /**
  * `pnpm health --stale-hours 0 --limit 500` — probe sources now.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bestHeight, isMasterPlaylist, parseVariants, rewriteManifest } from './hls.ts'
+import { bestHeight, isMasterPlaylist, parseVariants, rewriteManifest } from '../src/lib/hls.ts'
 
 /**
  * Playlist rewriting is where a stream proxy quietly fails: miss one URI kind

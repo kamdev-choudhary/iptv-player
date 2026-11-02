@@ -10,11 +10,11 @@ import type {
   Page,
   SortKey,
 } from '@tuner/shared'
-import { db } from '../db/index.ts'
-import type { SourceHealthRow, SourceRow } from '../db/schema.ts'
-import { playModeFor } from '../lib/classify.ts'
-import { decodeCursor, encodeCursor } from '../lib/cursor.ts'
-import { DEAD_AFTER_FAILURES } from './stats.ts'
+import { db } from '../../core/db/index.ts'
+import type { SourceHealthRow, SourceRow } from '../../core/db/schema.ts'
+import { playModeFor } from '../sources/sources.classify.ts'
+import { decodeCursor, encodeCursor } from '../../core/cursor.ts'
+import { DEAD_AFTER_FAILURES } from './catalog.stats.ts'
 
 /** `%` and `_` in a user's query are literal characters, not wildcards. */
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, (c) => `\\${c}`)

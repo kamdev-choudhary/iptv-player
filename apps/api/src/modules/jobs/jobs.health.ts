@@ -1,9 +1,9 @@
 import { sql } from 'kysely'
 import type { HealthReason, HealthRunOptions } from '@tuner/shared'
-import { db } from '../db/index.ts'
-import { mapLimit } from '../lib/upstream.ts'
-import { probeSource } from './probe.ts'
-import { refreshChannelStats } from './stats.ts'
+import { db } from '../../core/db/index.ts'
+import { mapLimit } from '../../core/upstream.ts'
+import { probeSource } from '../sources/sources.probe.ts'
+import { refreshChannelStats } from '../catalog/catalog.stats.ts'
 
 /**
  * Probes sources and records what happened.

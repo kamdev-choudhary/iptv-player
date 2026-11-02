@@ -1,15 +1,15 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import {
-  channelDetail as channelDetailSchema,
+  apiChannel,
+  channelDetail,
   channelId,
   channelPage,
   channelQuery,
   channelsByIdQuery,
-  facets as facetsSchema,
-  apiChannel,
+  facets,
 } from '@tuner/shared'
-import { channelDetail, channelsByIds, facets, listChannels } from '../services/catalog.ts'
+import * as controller from './catalog.controller.ts'
 
 /**
  * The read API. Filtering and paging happen in Postgres rather than over an
@@ -18,23 +18,16 @@ import { channelDetail, channelsByIds, facets, listChannels } from '../services/
  * instead of the next deploy.
  */
 export const catalogRoutes: FastifyPluginAsyncZod = async (app) => {
-  // The lineup changes when a sync or a probe sweep lands, not per request, so
-  // a short shared cache absorbs a room full of clients opening the same page.
-  const listCache = 'public, max-age=30, stale-while-revalidate=120'
-
   app.get(
     '/facets',
     {
       schema: {
         operationId: 'facets',
         description: 'Filterable values with channel counts, plus catalog totals.',
-        response: { 200: facetsSchema },
+        response: { 200: facets },
       },
     },
-    async (_req, reply) => {
-      reply.header('cache-control', 'public, max-age=300, stale-while-revalidate=600')
-      return facets()
-    },
+    controller.facets,
   )
 
   app.get(
@@ -42,15 +35,12 @@ export const catalogRoutes: FastifyPluginAsyncZod = async (app) => {
     {
       schema: {
         operationId: 'listChannels',
-        description: 'The lineup, filtered and paged.',
+        description: 'The channel list, filtered and paged.',
         querystring: channelQuery,
         response: { 200: channelPage },
       },
     },
-    async (req, reply) => {
-      reply.header('cache-control', listCache)
-      return listChannels(req.query)
-    },
+    controller.listChannels,
   )
 
   /**
@@ -68,7 +58,7 @@ export const catalogRoutes: FastifyPluginAsyncZod = async (app) => {
         response: { 200: z.object({ items: z.array(apiChannel) }) },
       },
     },
-    async (req) => ({ items: await channelsByIds(req.body.ids) }),
+    controller.channelsByIds,
   )
 
   app.get(
@@ -78,17 +68,9 @@ export const catalogRoutes: FastifyPluginAsyncZod = async (app) => {
         operationId: 'channelDetail',
         description: 'One channel with its playable sources, best first.',
         params: z.object({ id: channelId }),
-        response: {
-          200: channelDetailSchema,
-          404: z.object({ error: z.string() }),
-        },
+        response: { 200: channelDetail, 404: z.object({ error: z.string() }) },
       },
     },
-    async (req, reply) => {
-      const channel = await channelDetail(req.params.id)
-      if (!channel) return reply.code(404).send({ error: 'No such channel' })
-      reply.header('cache-control', listCache)
-      return channel
-    },
+    controller.channelDetail,
   )
 }

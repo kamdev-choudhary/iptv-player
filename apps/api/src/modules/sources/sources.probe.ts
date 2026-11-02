@@ -1,7 +1,7 @@
 import type { HealthReason, ProbeResult } from '@tuner/shared'
-import { looksLikeHls } from '../lib/classify.ts'
-import { bestHeight, isMasterPlaylist, looksLikePlaylist, parseVariants } from '../lib/hls.ts'
-import { fetchUpstream, readCapped } from '../lib/upstream.ts'
+import { looksLikeHls } from './sources.classify.ts'
+import { bestHeight, isMasterPlaylist, looksLikePlaylist, parseVariants } from '../stream/stream.hls.ts'
+import { fetchUpstream, readCapped } from '../../core/upstream.ts'
 
 /**
  * Asks a source whether it is alive, from the server's point of view.

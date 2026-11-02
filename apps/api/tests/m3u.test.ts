@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseM3u, slug } from './m3u.ts'
+import { parseM3u, slug } from '../src/lib/m3u.ts'
 
 /**
  * Real playlists are inconsistent in specific, repeated ways, and each of

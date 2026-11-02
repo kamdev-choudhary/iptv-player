@@ -7,10 +7,10 @@ import type {
   SourcePatch,
   XtreamImport,
 } from '@tuner/shared'
-import { db } from '../db/index.ts'
-import { flagsFor, heightOf } from '../lib/classify.ts'
-import { parseM3u } from '../lib/m3u.ts'
-import { refreshChannelStats, refreshSearchText } from './stats.ts'
+import { db } from '../../core/db/index.ts'
+import { flagsFor, heightOf } from './sources.classify.ts'
+import { parseM3u } from '../imports/imports.m3u.ts'
+import { refreshChannelStats, refreshSearchText } from '../catalog/catalog.stats.ts'
 
 /**
  * The write layer. Every function here marks what it touches as `locked`,

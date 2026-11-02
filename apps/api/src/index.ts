@@ -1,8 +1,8 @@
-import { closeDb } from './db/index.ts'
-import { migrateToLatest } from './db/migrate.ts'
-import { env } from './env.ts'
-import { startScheduler } from './scheduler.ts'
-import { buildServer } from './server.ts'
+import { closeDb } from './core/db/index.ts'
+import { migrateToLatest } from './core/db/migrate.ts'
+import { env } from './core/env.ts'
+import { startScheduler } from './modules/jobs/jobs.scheduler.ts'
+import { buildServer } from './app.ts'
 
 const app = await buildServer()
 

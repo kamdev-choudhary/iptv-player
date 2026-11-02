@@ -3,5 +3,8 @@
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/shared.tsbuildinfo"
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "tests"
+  ]
 }

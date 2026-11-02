@@ -1,7 +1,7 @@
-import { closeDb } from '../db/index.ts'
-import { migrateToLatest } from '../db/migrate.ts'
-import { JobBusyError, runJob } from '../services/jobs.ts'
-import { runSync } from '../services/sync.ts'
+import { closeDb } from '../core/db/index.ts'
+import { migrateToLatest } from '../core/db/migrate.ts'
+import { JobBusyError, runJob } from '../modules/jobs/jobs.service.ts'
+import { runSync } from '../modules/jobs/jobs.sync.ts'
 
 /** `pnpm sync` — a one-off pull, for the first load and for debugging. */
 try {

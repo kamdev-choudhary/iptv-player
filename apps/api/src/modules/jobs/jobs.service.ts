@@ -1,7 +1,7 @@
 import { sql } from 'kysely'
 import type { JobName, JobRun } from '@tuner/shared'
-import { db } from '../db/index.ts'
-import type { JobRunRow } from '../db/schema.ts'
+import { db } from '../../core/db/index.ts'
+import type { JobRunRow } from '../../core/db/schema.ts'
 
 /**
  * Bookkeeping around the two long jobs, so an operator can see what ran, when,

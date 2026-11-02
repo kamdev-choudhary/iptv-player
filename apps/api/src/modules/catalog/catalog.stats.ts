@@ -1,5 +1,5 @@
 import { sql } from 'kysely'
-import { db } from '../db/index.ts'
+import { db } from '../../core/db/index.ts'
 
 /** Failures after which a source is treated as written off rather than flaky. */
 export const DEAD_AFTER_FAILURES = 3
