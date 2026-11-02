@@ -152,11 +152,14 @@ export function Lineup({
     if (lastIndex >= channels.length - PREFETCH_ROWS) onLoadMore()
   }, [hasMore, loadingMore, lastIndex, channels.length, onLoadMore])
 
-  // A new search is a new list, and reading it from halfway down is not what
-  // anyone means by searching.
+  // A different first row means a different list — a new search, a changed
+  // filter, a switch to Starred — and reading a new list from halfway down is
+  // not what anyone meant. Appending a page leaves the first row alone, so
+  // paging does not trip this.
+  const firstId = channels[0]?.id
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 })
-  }, [search])
+  }, [firstId])
 
   return (
     <section aria-label="Channels" className="flex h-full min-h-0 flex-col">

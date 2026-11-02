@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <!-- Background Chassis Gradient -->
+    <linearGradient id="chassisGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1b2029" />
+      <stop offset="50%" stop-color="#101318" />
+      <stop offset="100%" stop-color="#07080b" />
+    </linearGradient>
+
+    <!-- Outer Rim Highlight -->
+    <linearGradient id="rimGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4a5568" stop-opacity="0.6" />
+      <stop offset="40%" stop-color="#1f2633" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#0c0e12" stop-opacity="0.8" />
+    </linearGradient>
+
+    <!-- Accent Signal Glow -->
+    <radialGradient id="signalGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4fcfe0" stop-opacity="0.45" />
+      <stop offset="50%" stop-color="#4fcfe0" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#4fcfe0" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Dial / Screen Inner Bezel -->
+    <linearGradient id="bezelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#161b22" />
+      <stop offset="100%" stop-color="#0b0d11" />
+    </linearGradient>
+
+    <!-- Signal Stream Gradient -->
+    <linearGradient id="streamGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#55d6e3" />
+      <stop offset="55%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#3fd08a" />
+    </linearGradient>
+
+    <!-- Glass Reflection -->
+    <linearGradient id="glassReflection" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.08" />
+      <stop offset="35%" stop-color="#ffffff" stop-opacity="0.02" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Glow Filter for Signal Tally -->
+    <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="16" result="blur1" />
+      <feGaussianBlur stdDeviation="32" result="blur2" />
+      <feMerge>
+        <feMergeNode in="blur2" />
+        <feMergeNode in="blur1" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <filter id="subtleGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Base Squircle Chassis -->
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#chassisGrad)" stroke="url(#rimGrad)" stroke-width="4" />
+
+  <!-- Inner Recessed Console Display Screen -->
+  <rect x="44" y="44" width="424" height="424" rx="86" fill="url(#bezelGrad)" stroke="#1a202a" stroke-width="2.5" />
+
+  <!-- Master Control Room Ambient Signal Glow -->
+  <circle cx="256" cy="226" r="190" fill="url(#signalGlow)" />
+
+  <!-- Tuner Dial Arc: Concentric Radar / Frequency Ticks -->
+  <g opacity="0.32" stroke="#526075" stroke-width="2.5" stroke-linecap="round">
+    <!-- Top Arc Ticks -->
+    <line x1="256" y1="78" x2="256" y2="88" stroke="#4fcfe0" opacity="0.9" stroke-width="3" />
+    <line x1="216" y1="82" x2="219" y2="92" />
+    <line x1="296" y1="82" x2="293" y2="92" />
+    <line x1="178" y1="94" x2="183" y2="103" />
+    <line x1="334" y1="94" x2="329" y2="103" />
+    <line x1="144" y1="114" x2="151" y2="122" />
+    <line x1="368" y1="114" x2="361" y2="122" />
+    <line x1="116" y1="142" x2="125" y2="149" />
+    <line x1="396" y1="142" x2="387" y2="149" />
+  </g>
+
+  <!-- Tuner Broadcast Signal Waves (Left & Right Antenna / Frequency Arcs) -->
+  <g fill="none" stroke-linecap="round">
+    <!-- Outer wave -->
+    <path d="M 148 180 A 136 136 0 0 1 148 290" stroke="#252d3a" stroke-width="6" />
+    <path d="M 364 180 A 136 136 0 0 0 364 290" stroke="#252d3a" stroke-width="6" />
+
+    <!-- Mid wave with signal tint -->
+    <path d="M 172 195 A 98 98 0 0 1 172 275" stroke="#334255" stroke-width="7" />
+    <path d="M 340 195 A 98 98 0 0 0 340 275" stroke="#334255" stroke-width="7" />
+
+    <!-- Inner active wave -->
+    <path d="M 196 210 A 62 62 0 0 1 196 260" stroke="#4fcfe0" stroke-opacity="0.65" stroke-width="7" />
+    <path d="M 316 210 A 62 62 0 0 0 316 260" stroke="#4fcfe0" stroke-opacity="0.65" stroke-width="7" />
+  </g>
+
+  <!-- Central Broadcast Core: TV Screen & Play/Tuner Apex -->
+  <!-- Outer TV / Aperture Frame -->
+  <rect x="180" y="160" width="152" height="126" rx="28" fill="#13171e" stroke="#2c3645" stroke-width="4" />
+  <!-- Inner Glass Phosphor Plate -->
+  <rect x="186" y="166" width="140" height="114" rx="22" fill="#0b0e13" />
+
+  <!-- Glowing Play / Stream Indicator Triangle -->
+  <path d="M 242 198 C 242 194.5 245.8 192.4 248.8 194.2 L 282.4 214.2 C 285.2 215.9 285.2 220.1 282.4 221.8 L 248.8 241.8 C 245.8 243.6 242 241.5 242 238 Z"
+        fill="url(#streamGrad)"
+        filter="url(#neonGlow)" />
+
+  <!-- The Iconic Tally Node (Top Center Active Indicator) -->
+  <circle cx="256" cy="128" r="14" fill="#3fd08a" opacity="0.3" filter="url(#subtleGlow)" />
+  <circle cx="256" cy="128" r="9" fill="#3fd08a" />
+  <circle cx="256" cy="128" r="4" fill="#d1fae5" />
+
+  <!-- Instrument Lower Rails: Spectrum / Channel Lines -->
+  <!-- Primary Rail (Cyan tuned state) -->
+  <g filter="url(#subtleGlow)">
+    <rect x="148" y="322" width="216" height="14" rx="7" fill="url(#streamGrad)" />
+  </g>
+
+  <!-- Secondary Rail (Active stream buffer) -->
+  <rect x="148" y="352" width="138" height="12" rx="6" fill="#374357" />
+  <rect x="148" y="352" width="76" height="12" rx="6" fill="#4fcfe0" fill-opacity="0.6" />
+
+  <!-- Tertiary Rail (Telemetry metadata) -->
+  <rect x="148" y="380" width="80" height="10" rx="5" fill="#252d3a" />
+  <rect x="238" y="380" width="54" height="10" rx="5" fill="#252d3a" />
+  <rect x="302" y="380" width="62" height="10" rx="5" fill="#252d3a" />
+
+  <!-- Top Glass Sheen / Hardware Glare -->
+  <path d="M 44 130 C 44 82 82 44 130 44 L 382 44 C 430 44 468 82 468 130 L 468 200 C 350 250 162 250 44 200 Z" fill="url(#glassReflection)" />
+</svg>
+
