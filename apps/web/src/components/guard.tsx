@@ -63,7 +63,7 @@ function AppFallback({ error, resetErrorBoundary }: FallbackProps) {
 }
 
 /** Reported to the console as an error, so it is never silently absorbed. */
-function report(error: Error) {
+function report(error: unknown) {
   console.error('render failed', error)
 }
 

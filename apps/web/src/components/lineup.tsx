@@ -126,6 +126,11 @@ export function Lineup({
   // shows up once the list is long.
   const starredIds = useMemo(() => new Set(favorites), [favorites])
 
+  // The compiler rule objects to hooks that hand back functions, because it
+  // cannot memoize around them. That is exactly what a virtualizer is, and the
+  // values taken from it below are read during render rather than passed into
+  // anything memoized, so there is no stale snapshot for it to hold.
+  // oxlint-disable-next-line react/incompatible-library
   const virtualizer = useVirtualizer({
     count: channels.length,
     getScrollElement: () => scrollRef.current,
