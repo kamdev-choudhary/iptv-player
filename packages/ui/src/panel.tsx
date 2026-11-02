@@ -166,7 +166,7 @@ function PanelCombobox({
           id={id}
           type="button"
           variant="outline"
-          role="combobox"
+          aria-haspopup="listbox"
           aria-expanded={open}
           aria-label={rest['aria-label']}
           disabled={disabled}

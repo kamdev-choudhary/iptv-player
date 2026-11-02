@@ -11,21 +11,6 @@ import { useHotkeys } from '@/hooks/use-hotkeys.ts'
 import { usePlayback } from '@/hooks/use-playback.ts'
 import { activeFilterCount, prefs, usePrefs } from '@/lib/prefs.ts'
 
-/**
- * Two panes: the picture, and the channels.
- *
- * Everything else — filters, settings, the sources behind a channel — opens
- * over the top and closes again. The picture is the reason the page exists, so
- * it keeps the room, and the list beside it means choosing what to watch never
- * costs you sight of what you are watching.
- *
- * The two sizes scroll differently on purpose. On a desktop the page is fixed
- * to the viewport and each pane scrolls inside itself, so the picture never
- * leaves the screen. On a phone there is no room for that: the video pins to
- * the top at its natural aspect ratio and the page scrolls underneath it,
- * which is what every reading surface on a phone already does.
- */
-
 /** The deep link, read once at startup: `#c=<channel-id>`. */
 function channelFromHash(): string | null {
   const match = /^#c=(.+)$/.exec(window.location.hash)

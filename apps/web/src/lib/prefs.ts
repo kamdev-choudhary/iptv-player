@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
 import { useShallow } from 'zustand/react/shallow'
 import { z } from 'zod'
-import { sortKey, type SortKey } from '@tuner/shared'
+import { sortKey } from '@tuner/shared'
 
 /**
  * What this browser remembers: the country and language you picked, the rest

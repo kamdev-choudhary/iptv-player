@@ -19,7 +19,7 @@ import {
   TabsTrigger,
 } from '@tuner/ui'
 import type { ChannelDetail } from '@tuner/shared'
-import { prefs, type Prefs } from '@/lib/prefs.ts'
+import { prefs, type Persisted } from '@/lib/prefs.ts'
 import { useJobRuns, usePatchSource, useProbe, useRunJob } from '@/api/hooks.ts'
 import { latencyLabel } from '@/lib/signal.ts'
 
@@ -32,7 +32,7 @@ import { latencyLabel } from '@/lib/signal.ts'
  * ordinary viewer sees playback settings and nothing else.
  */
 
-function PlaybackSettings({ settings }: { settings: Prefs }) {
+function PlaybackSettings({ settings }: { settings: Persisted }) {
   return (
     <div className="flex flex-col gap-4">
       <Check
@@ -264,7 +264,7 @@ export function SettingsDialog({
 }: {
   open: boolean
   onClose: () => void
-  settings: Prefs
+  settings: Persisted
   channel: ChannelDetail | null
 }) {
   const token = settings.adminToken
