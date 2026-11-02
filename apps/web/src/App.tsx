@@ -9,8 +9,7 @@ import { useChannel, useChannelsByIds, useFacets, useLineup } from '@/api/hooks.
 import { useDebounced } from '@/hooks/use-debounced.ts'
 import { useHotkeys } from '@/hooks/use-hotkeys.ts'
 import { usePlayback } from '@/hooks/use-playback.ts'
-import { usePrefs } from '@/hooks/use-prefs.ts'
-import { activeFilterCount, prefs } from '@/lib/prefs.ts'
+import { activeFilterCount, prefs, usePrefs } from '@/lib/prefs.ts'
 
 /**
  * Two panes: the picture, and the channels.

@@ -1,5 +1,5 @@
 import { useState, type ComponentProps, type ReactNode } from 'react'
-import { Check, ChevronsUpDown } from 'lucide-react'
+import { CheckIcon, ChevronsUpDown } from 'lucide-react'
 import { cn } from './lib/utils.ts'
 import { Button } from './components/ui/button.tsx'
 import {
@@ -201,7 +201,7 @@ function PanelCombobox({
             <CommandGroup>
               {placeholder ? (
                 <CommandItem value={placeholder} onSelect={() => choose('')}>
-                  <Check className={cn('shrink-0', value ? 'opacity-0' : 'opacity-100')} />
+                  <CheckIcon className={cn('shrink-0', value ? 'opacity-0' : 'opacity-100')} />
                   <span className="text-muted-foreground">{placeholder}</span>
                 </CommandItem>
               ) : null}
@@ -212,7 +212,7 @@ function PanelCombobox({
                   value={option.label}
                   onSelect={() => choose(option.value)}
                 >
-                  <Check
+                  <CheckIcon
                     className={cn('shrink-0', value === option.value ? 'opacity-100' : 'opacity-0')}
                   />
                   <OptionRow option={option} />
