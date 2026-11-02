@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
-import { clsx } from 'clsx'
 import { Star } from 'lucide-react'
-import { Button, Empty, Readout, RowSkeleton, Tally } from '@tuner/ui'
+import { Button, Empty, PanelScroll, Readout, RowSkeleton, Tally, cn } from '@tuner/ui'
 import type { ApiChannel, Facets } from '@tuner/shared'
 import { channelSummary, channelTally, heightLabel } from '@/lib/signal.ts'
 import { prefs } from '@/lib/prefs.ts'
@@ -30,19 +29,18 @@ function Row({
   onOpen: () => void
 }) {
   const country = facets?.countries.find((c) => c.code === channel.country)
-  const state = channelTally(channel)
 
   return (
     <div
-      className={clsx(
-        'group relative flex h-12 items-center gap-3 border-b border-rail pr-2 pl-3 text-left',
-        tuned ? 'bg-signal/10' : 'hover:bg-panel-lift',
+      className={cn(
+        'group relative flex h-12 items-center gap-3 border-b pr-2 pl-3 text-left',
+        tuned ? 'bg-signal/10' : 'hover:bg-accent',
       )}
     >
       {/* The tuned channel is marked by a rail, not a shadow or a glow. */}
       {tuned ? <span className="absolute inset-y-0 left-0 w-0.5 bg-signal" aria-hidden /> : null}
 
-      <Tally state={state} />
+      <Tally state={channelTally(channel)} />
 
       <button
         type="button"
@@ -52,15 +50,10 @@ function Row({
       >
         <ChannelMark name={channel.name} logo={channel.logo} size="sm" />
         <span className="min-w-0 flex-1">
-          <span
-            className={clsx(
-              'block truncate text-small',
-              tuned ? 'text-signal' : 'text-readout',
-            )}
-          >
+          <span className={cn('block truncate text-small', tuned && 'text-signal')}>
             {channel.name}
           </span>
-          <span className="block truncate text-micro text-etch">
+          <span className="block truncate text-micro text-muted-foreground">
             {country ? `${country.extra ?? ''} ${country.name}`.trim() : 'Unlisted country'}
           </span>
         </span>
@@ -69,22 +62,20 @@ function Row({
       <Readout value={heightLabel(channel.bestHeight)} className="w-12 text-right" />
       <Readout
         value={channel.sourceCount ? `${channel.liveCount}/${channel.sourceCount}` : '—'}
-        tone={channel.liveCount > 0 ? 'live' : 'etch'}
+        tone={channel.liveCount > 0 ? 'live' : 'muted'}
         className="w-12 text-right"
       />
 
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="icon-xs"
         onClick={() => prefs.toggleFavorite(channel.id)}
         aria-label={starred ? `Unstar ${channel.name}` : `Star ${channel.name}`}
         aria-pressed={starred}
-        className={clsx(
-          'shrink-0 rounded-control p-1 transition-colors',
-          starred ? 'text-signal' : 'text-rail hover:text-etch group-hover:text-etch',
-        )}
+        className={cn(starred ? 'text-signal' : 'text-border group-hover:text-muted-foreground')}
       >
-        <Star className="size-3.5" fill={starred ? 'currentColor' : 'none'} strokeWidth={1.75} />
-      </button>
+        <Star fill={starred ? 'currentColor' : 'none'} strokeWidth={1.75} />
+      </Button>
     </div>
   )
 }
@@ -130,7 +121,7 @@ export function Lineup({
     if (!node || !hasMore) return
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((e) => e.isIntersecting)) onLoadMore()
+        if (entries.some((entry) => entry.isIntersecting)) onLoadMore()
       },
       { rootMargin: '400px' },
     )
@@ -139,27 +130,22 @@ export function Lineup({
   }, [hasMore, onLoadMore])
 
   return (
-    <section
-      aria-label="Lineup"
-      className="flex min-h-0 flex-col border-l border-rail bg-panel"
-    >
-      <header className="flex h-10 shrink-0 items-center gap-2 border-b border-rail px-3">
-        <h2 className="text-small text-readout">Lineup</h2>
-        <span className="tabular text-micro text-etch">
+    <section aria-label="Lineup" className="flex min-h-0 flex-col border-l bg-card">
+      <header className="flex h-10 shrink-0 items-center gap-2 border-b px-3">
+        <h2 className="text-small">Lineup</h2>
+        <span className="tabular text-micro text-muted-foreground">
           {loading ? 'loading' : `${total.toLocaleString()} channels`}
         </span>
-        {refreshing ? (
-          <output className="ml-auto text-micro text-signal">updating</output>
-        ) : null}
+        {refreshing ? <output className="ml-auto text-micro text-signal">updating</output> : null}
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+      <PanelScroll>
         {error ? (
           <Empty
             head="The lineup could not be loaded"
             body={error.message}
             action={
-              <Button variant="primary" size="sm" onClick={() => window.location.reload()}>
+              <Button size="sm" onClick={() => window.location.reload()}>
                 Reload
               </Button>
             }
@@ -171,7 +157,7 @@ export function Lineup({
             head="Nothing matches those filters"
             body="Widen the search, or clear the filters to see the whole lineup again."
             action={
-              <Button variant="primary" size="sm" onClick={onClearFilters}>
+              <Button size="sm" onClick={onClearFilters}>
                 Clear filters
               </Button>
             }
@@ -190,14 +176,12 @@ export function Lineup({
             ))}
             <div ref={sentinel} className="h-px" />
             {loadingMore ? <RowSkeleton /> : null}
-            {!hasMore && channels.length > 0 ? (
-              <p className="px-3 py-4 text-micro text-etch">
-                End of the lineup.
-              </p>
+            {!hasMore ? (
+              <p className="px-3 py-4 text-micro text-muted-foreground">End of the lineup.</p>
             ) : null}
           </>
         )}
-      </div>
+      </PanelScroll>
     </section>
   )
 }

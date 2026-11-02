@@ -107,9 +107,7 @@ export const prefs = {
   /** Returns whether it is now starred, so the caller can react immediately. */
   toggleFavorite(id: string) {
     const starred = state.favorites.includes(id)
-    state.favorites = starred
-      ? state.favorites.filter((x) => x !== id)
-      : [id, ...state.favorites]
+    state.favorites = starred ? state.favorites.filter((x) => x !== id) : [id, ...state.favorites]
     commit()
     return !starred
   },

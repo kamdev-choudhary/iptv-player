@@ -1,4 +1,14 @@
-import { Button, Check, Field, Rule, Select, TallyCount } from '@tuner/ui'
+import {
+  Button,
+  Check,
+  Field,
+  PanelSelect,
+  Rule,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TallyCount,
+} from '@tuner/ui'
 import type { Facets } from '@tuner/shared'
 import { activeFilterCount, prefs, type Filters } from '@/lib/prefs.ts'
 
@@ -19,13 +29,15 @@ const RESOLUTIONS = [
   { value: '2160', label: '4K only' },
 ]
 
+export type LibraryView = 'all' | 'starred' | 'recent'
+
 export interface FilterPanelProps {
   filters: Filters
   facets: Facets | undefined
-  view: 'all' | 'starred' | 'recent'
+  view: LibraryView
   starredCount: number
   recentCount: number
-  onView: (view: 'all' | 'starred' | 'recent') => void
+  onView: (view: LibraryView) => void
 }
 
 export function FilterPanel({
@@ -42,38 +54,34 @@ export function FilterPanel({
   return (
     <aside
       aria-label="Filters"
-      className="flex min-h-0 flex-col gap-4 overflow-y-auto border-r border-rail bg-panel px-3 py-3"
+      className="flex min-h-0 flex-col gap-4 overflow-y-auto border-r bg-card px-3 py-3"
     >
-      <nav className="flex gap-1" aria-label="View">
-        {(
-          [
-            ['all', 'All', null],
-            ['starred', 'Starred', starredCount],
-            ['recent', 'Recent', recentCount],
-          ] as const
-        ).map(([key, label, count]) => (
-          <Button
-            key={key}
-            size="sm"
-            variant={view === key ? 'primary' : 'ghost'}
-            onClick={() => onView(key)}
-            aria-pressed={view === key}
-            className="flex-1"
-          >
-            {label}
-            {count ? <span className="tabular text-micro opacity-70">{count}</span> : null}
-          </Button>
-        ))}
-      </nav>
+      <Tabs value={view} onValueChange={(next) => onView(next as LibraryView)}>
+        <TabsList className="w-full">
+          <TabsTrigger value="all">All</TabsTrigger>
+          <TabsTrigger value="starred">
+            Starred
+            {starredCount ? (
+              <span className="tabular text-micro opacity-70">{starredCount}</span>
+            ) : null}
+          </TabsTrigger>
+          <TabsTrigger value="recent">
+            Recent
+            {recentCount ? (
+              <span className="tabular text-micro opacity-70">{recentCount}</span>
+            ) : null}
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {view === 'all' ? (
         <>
           <Field label="Country" htmlFor="filter-country">
-            <Select
+            <PanelSelect
               id="filter-country"
               placeholder="Anywhere"
               value={filters.country}
-              onChange={(e) => prefs.setFilters({ country: e.target.value })}
+              onValueChange={(country) => prefs.setFilters({ country })}
               options={(facets?.countries ?? []).map((c) => ({
                 value: c.code,
                 label: `${c.extra ?? ''} ${c.name}`.trim(),
@@ -83,11 +91,11 @@ export function FilterPanel({
           </Field>
 
           <Field label="Language" htmlFor="filter-language">
-            <Select
+            <PanelSelect
               id="filter-language"
               placeholder="Any language"
               value={filters.language}
-              onChange={(e) => prefs.setFilters({ language: e.target.value })}
+              onValueChange={(language) => prefs.setFilters({ language })}
               options={(facets?.languages ?? []).map((l) => ({
                 value: l.code,
                 label: l.name,
@@ -97,13 +105,11 @@ export function FilterPanel({
           </Field>
 
           <Field label="Category" htmlFor="filter-category">
-            <Select
+            <PanelSelect
               id="filter-category"
               placeholder="Any category"
               value={filters.category[0] ?? ''}
-              onChange={(e) =>
-                prefs.setFilters({ category: e.target.value ? [e.target.value] : [] })
-              }
+              onValueChange={(value) => prefs.setFilters({ category: value ? [value] : [] })}
               options={(facets?.categories ?? []).map((c) => ({
                 value: c.code,
                 label: c.name,
@@ -113,11 +119,11 @@ export function FilterPanel({
           </Field>
 
           <Field label="Minimum resolution" htmlFor="filter-quality">
-            <Select
+            <PanelSelect
               id="filter-quality"
               placeholder="Any resolution"
               value={filters.minHeight ? String(filters.minHeight) : ''}
-              onChange={(e) => prefs.setFilters({ minHeight: Number(e.target.value) || 0 })}
+              onValueChange={(value) => prefs.setFilters({ minHeight: Number(value) || 0 })}
               options={RESOLUTIONS}
             />
           </Field>
@@ -125,16 +131,19 @@ export function FilterPanel({
           <div>
             <Rule>Narrow by state</Rule>
             <Check
+              id="filter-live"
               label="Confirmed live only"
               checked={filters.liveOnly}
               onChange={(liveOnly) => prefs.setFilters({ liveOnly })}
             />
             <Check
+              id="filter-playable"
               label="Hide channels with nothing playable"
               checked={filters.playableOnly}
               onChange={(playableOnly) => prefs.setFilters({ playableOnly })}
             />
             <Check
+              id="filter-matched"
               label="Hide unidentified streams"
               checked={filters.matchedOnly}
               onChange={(matchedOnly) => prefs.setFilters({ matchedOnly })}
@@ -148,7 +157,7 @@ export function FilterPanel({
           ) : null}
         </>
       ) : (
-        <p className="text-small text-etch">
+        <p className="text-small text-muted-foreground">
           {view === 'starred'
             ? 'Channels you have starred, newest first.'
             : 'Channels you have watched, most recent first.'}
@@ -162,7 +171,7 @@ export function FilterPanel({
             <TallyCount state="live" label="Live sources" count={facets.liveSourceCount} />
             <TallyCount state="fault" label="Not answering" count={dead} />
             <TallyCount state="off" label="Channels" count={facets.channelCount} />
-            <p className="pt-2 text-micro text-etch/80">
+            <p className="pt-2 text-micro text-muted-foreground/80">
               {facets.lastHealthCheckAt
                 ? `Checked ${new Intl.DateTimeFormat(undefined, {
                     dateStyle: 'short',
@@ -172,7 +181,7 @@ export function FilterPanel({
             </p>
           </>
         ) : (
-          <p className="text-micro text-etch">Waiting for the server.</p>
+          <p className="text-micro text-muted-foreground">Waiting for the server.</p>
         )}
       </div>
     </aside>

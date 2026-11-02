@@ -51,7 +51,11 @@ export function useLineup(params: LineupQuery, enabled = true) {
     enabled,
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam, signal }) =>
-      api.get(`/api/channels${query({ ...params, cursor: pageParam, limit: 60 })}`, channelPage, signal),
+      api.get(
+        `/api/channels${query({ ...params, cursor: pageParam, limit: 60 })}`,
+        channelPage,
+        signal,
+      ),
     getNextPageParam: (last) => last.nextCursor ?? undefined,
     // A page already fetched stays usable while the next query runs, so
     // narrowing a filter does not blank the panel.
@@ -64,7 +68,8 @@ export function useChannel(id: string | null) {
   return useQuery({
     queryKey: keys.channel(id ?? ''),
     enabled: Boolean(id),
-    queryFn: ({ signal }) => api.get(`/api/channels/${encodeURIComponent(id!)}`, channelDetail, signal),
+    queryFn: ({ signal }) =>
+      api.get(`/api/channels/${encodeURIComponent(id!)}`, channelDetail, signal),
     // Source health is the point of asking, and it changes on every sweep.
     staleTime: 30_000,
   })
@@ -106,7 +111,8 @@ function invalidateCatalog(client: QueryClient) {
 
 export function useProbe(token: string | null) {
   return useMutation({
-    mutationFn: (body: ProbeRequest) => api.post('/admin/probe', probeResult, body, token ?? undefined),
+    mutationFn: (body: ProbeRequest) =>
+      api.post('/admin/probe', probeResult, body, token ?? undefined),
   })
 }
 

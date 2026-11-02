@@ -1,4 +1,4 @@
-import { clsx } from 'clsx'
+import { cn } from './lib/utils.ts'
 
 /**
  * The signal indicator, and the one device this interface is built around.
@@ -18,7 +18,7 @@ const COLOR: Record<TallyState, string> = {
   hold: 'text-hold',
   fault: 'text-fault',
   routed: 'text-routed',
-  off: 'text-rail',
+  off: 'text-border',
 }
 
 /** Said aloud by a screen reader, and used as the title on hover. */
@@ -48,7 +48,7 @@ export function Tally({ state, struck, size = 'sm', className }: TallyProps) {
       <span
         aria-hidden
         title={TALLY_LABEL[state]}
-        className={clsx(
+        className={cn(
           'inline-block shrink-0 rounded-pill border',
           box,
           COLOR[state],
@@ -87,10 +87,10 @@ export function TallyCount({
       type={onClick ? 'button' : undefined}
       onClick={onClick}
       aria-pressed={onClick ? Boolean(active) : undefined}
-      className={clsx(
+      className={cn(
         'flex w-full items-center gap-2 py-1 text-small',
-        onClick && 'cursor-pointer hover:text-readout',
-        active ? 'text-readout' : 'text-etch',
+        onClick && 'cursor-pointer hover:text-foreground',
+        active ? 'text-foreground' : 'text-muted-foreground',
       )}
     >
       <Tally state={state} />

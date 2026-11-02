@@ -1,3 +1,5 @@
+@import 'tw-animate-css';
+
 /**
  * Tuner's design tokens.
  *
@@ -9,6 +11,11 @@
  *
  * Dark only, and deliberately. This is a console for watching a picture in a
  * dim room; a light equipment panel would be a worse version of both jobs.
+ *
+ * The file has two halves. The first names the palette in this application's
+ * own terms. The second maps those names onto the ones shadcn/ui components
+ * read, so every primitive arrives already wearing this design rather than
+ * default zinc — there is no second theme to keep in step.
  */
 
 @theme {
@@ -43,15 +50,110 @@
   --text-section: 1.1875rem;
   --text-display: 1.5625rem;
   --text-slate: 2rem;
+}
 
-  /* Panels and rows are flush and ruled. Only things you press are rounded. */
-  --radius-control: 2px;
+/**
+ * The shadcn/ui contract. Panels and rows are flush and ruled, so the radius
+ * is 2px rather than the 10px shadcn ships with: only things you press are
+ * rounded, and barely.
+ */
+:root {
+  --radius: 2px;
+
+  --background: var(--color-rack);
+  --foreground: var(--color-readout);
+
+  /* A card here is a panel face, which is one step up from the rack. */
+  --card: var(--color-panel);
+  --card-foreground: var(--color-readout);
+  --popover: var(--color-panel);
+  --popover-foreground: var(--color-readout);
+
+  /* Cyan is the accent, and on it the darkest surface is the legible text. */
+  --primary: var(--color-signal);
+  --primary-foreground: var(--color-rack);
+
+  --secondary: var(--color-panel-lift);
+  --secondary-foreground: var(--color-readout);
+
+  --muted: var(--color-panel-lift);
+  --muted-foreground: var(--color-etch);
+
+  --accent: var(--color-panel-lift);
+  --accent-foreground: var(--color-readout);
+
+  --destructive: var(--color-fault);
+  --destructive-foreground: var(--color-readout);
+
+  --border: var(--color-rail);
+  --input: var(--color-rail);
+  --ring: var(--color-signal);
+
+  /* Charts, if any are ever added, read as signal states rather than a ramp. */
+  --chart-1: var(--color-signal);
+  --chart-2: var(--color-live);
+  --chart-3: var(--color-hold);
+  --chart-4: var(--color-routed);
+  --chart-5: var(--color-fault);
+
+  --sidebar: var(--color-panel);
+  --sidebar-foreground: var(--color-readout);
+  --sidebar-primary: var(--color-signal);
+  --sidebar-primary-foreground: var(--color-rack);
+  --sidebar-accent: var(--color-panel-lift);
+  --sidebar-accent-foreground: var(--color-readout);
+  --sidebar-border: var(--color-rail);
+  --sidebar-ring: var(--color-signal);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) - 1px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
   --radius-pill: 999px;
 }
 
 @layer base {
   :root {
     color-scheme: dark;
+  }
+
+  * {
+    border-color: var(--color-rail);
   }
 
   html {
@@ -65,7 +167,6 @@
     font-family: var(--font-sans);
     font-size: var(--text-base);
     line-height: 1.45;
-    font-feature-settings: 'cv05' 1;
     -webkit-font-smoothing: antialiased;
   }
 

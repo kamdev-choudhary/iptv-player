@@ -38,9 +38,11 @@ function Pattern() {
 
       {/* A greyscale staircase, for checking levels. */}
       <g>
-        {['#16191d', '#2a2f36', '#4a525c', '#6d7681', '#8c949e', '#b9c0c7', '#e8eaed'].map((fill, i) => (
-          <rect key={fill} x={44 + i * 10} y="78" width="10" height="6" fill={fill} />
-        ))}
+        {['#16191d', '#2a2f36', '#4a525c', '#6d7681', '#8c949e', '#b9c0c7', '#e8eaed'].map(
+          (fill, i) => (
+            <rect key={fill} x={44 + i * 10} y="78" width="10" height="6" fill={fill} />
+          ),
+        )}
       </g>
 
       {/* The first four SMPTE bars, dimmed — a nod, not a costume. */}
@@ -72,16 +74,23 @@ export function Slate({
 
       {/* The slate itself: a plate over the pattern, as an ident caption would be. */}
       <div className="absolute inset-0 flex items-center justify-center p-6">
-        <div className="w-full max-w-[52ch] border border-rail bg-rack/92 px-5 py-4 backdrop-blur-[2px]">
+        <div className="w-full max-w-[52ch] border  bg-background/92 px-5 py-4 backdrop-blur-[2px]">
           <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-display leading-tight text-readout">{head}</h2>
-            {reason ? <span className="tabular text-micro text-etch">{reason}</span> : null}
+            <h2 className="text-display leading-tight text-foreground">{head}</h2>
+            {reason ? (
+              <span className="tabular text-micro text-muted-foreground">{reason}</span>
+            ) : null}
           </div>
 
-          {body ? <p className="mt-2 text-small leading-relaxed text-etch">{body}</p> : null}
+          {body ? (
+            <p className="mt-2 text-small leading-relaxed text-muted-foreground">{body}</p>
+          ) : null}
 
           {tuning ? (
-            <output className="mt-4 block h-0.5 w-full overflow-hidden bg-rail" aria-label="Connecting">
+            <output
+              className="mt-4 block h-0.5 w-full overflow-hidden bg-rail"
+              aria-label="Connecting"
+            >
               <div className="h-full w-1/3 animate-[slate-sweep_1.4s_ease-in-out_infinite] bg-signal" />
             </output>
           ) : null}

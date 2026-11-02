@@ -26,7 +26,7 @@ export function ChannelMark({
       <span
         aria-hidden
         className={clsx(
-          'flex shrink-0 items-center justify-center rounded-control font-medium text-readout/85',
+          'flex shrink-0 items-center justify-center rounded-md font-medium text-foreground/85',
           box,
         )}
         style={{ background: markHue(name) }}
@@ -43,7 +43,7 @@ export function ChannelMark({
       loading="lazy"
       decoding="async"
       onError={() => setFailed(true)}
-      className={clsx('shrink-0 rounded-control bg-panel-lift object-contain p-0.5', box)}
+      className={clsx('shrink-0 rounded-md bg-accent object-contain p-0.5', box)}
     />
   )
 }

@@ -115,7 +115,9 @@ describe('channelSummary', () => {
   })
 
   it('says plainly when everything is failing', () => {
-    expect(channelSummary(channel({ liveCount: 0, playableCount: 0 }))).toBe('All 3 sources failing')
+    expect(channelSummary(channel({ liveCount: 0, playableCount: 0 }))).toBe(
+      'All 3 sources failing',
+    )
   })
 
   it('says when there is nothing listed', () => {

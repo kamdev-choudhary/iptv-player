@@ -24,8 +24,9 @@
     "check": "pnpm lint && turbo run typecheck test"
   },
   "devDependencies": {
+    "oxlint": "^1.90.0",
+    "prettier": "^3.9.10",
     "turbo": "^2.11.10",
-    "typescript": "^5.9.3",
-    "oxlint": "^1.90.0"
+    "typescript": "^5.9.3"
   }
 }

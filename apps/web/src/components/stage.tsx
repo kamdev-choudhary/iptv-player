@@ -33,8 +33,10 @@ function SourceRow({
       type="button"
       onClick={onTune}
       className={clsx(
-        'flex w-full items-center gap-2 border-b border-rail px-3 py-1.5 text-left last:border-b-0',
-        active ? 'bg-signal/10 text-signal' : 'text-etch hover:bg-panel-lift hover:text-readout',
+        'flex w-full items-center gap-2 border-b  px-3 py-1.5 text-left last:border-b-0',
+        active
+          ? 'bg-signal/10 text-signal'
+          : 'text-muted-foreground hover:bg-accent hover:text-foreground',
       )}
     >
       <Tally state={sourceTally(source)} />
@@ -98,7 +100,7 @@ export function Stage({
   const live = phase === 'live'
 
   return (
-    <section aria-label="Player" className="flex min-h-0 flex-col bg-rack">
+    <section aria-label="Player" className="flex min-h-0 flex-col bg-background">
       <div className="relative min-h-0 flex-1 bg-black">
         <video
           ref={videoRef}
@@ -121,9 +123,9 @@ export function Stage({
       </div>
 
       {/* Readout strip. Labels left, measurements right, in fixed columns. */}
-      <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-t border-rail bg-panel px-3 py-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-t  bg-card px-3 py-2">
         <div className="flex min-w-0 flex-1 items-baseline gap-2">
-          <h1 className="truncate text-section leading-tight text-readout">
+          <h1 className="truncate text-section leading-tight text-foreground">
             {channel?.name ?? 'Tuner'}
           </h1>
           {viaProxy && live ? <Badge tone="routed">through server</Badge> : null}
@@ -132,7 +134,7 @@ export function Stage({
 
         <dl className="flex items-center gap-4">
           <div className="flex items-baseline gap-1.5">
-            <dt className="text-micro text-etch">Source</dt>
+            <dt className="text-micro text-muted-foreground">Source</dt>
             <dd>
               <Readout
                 value={sources.length ? `${sourceIndex + 1}/${sources.length}` : '—'}
@@ -141,18 +143,20 @@ export function Stage({
             </dd>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <dt className="text-micro text-etch">Resolution</dt>
+            <dt className="text-micro text-muted-foreground">Resolution</dt>
             <dd>
               <Readout
                 value={heightLabel(
-                  activeRendition >= 0 ? (renditions[activeRendition]?.height ?? null) : (source?.height ?? null),
+                  activeRendition >= 0
+                    ? (renditions[activeRendition]?.height ?? null)
+                    : (source?.height ?? null),
                 )}
                 tone="readout"
               />
             </dd>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <dt className="text-micro text-etch">Latency</dt>
+            <dt className="text-micro text-muted-foreground">Latency</dt>
             <dd>
               <Readout value={latencyLabel(source?.health?.latencyMs ?? null)} tone="readout" />
             </dd>
@@ -216,9 +220,9 @@ export function Stage({
       </div>
 
       {/* The source strip. Shown whenever a channel has alternatives, because
-          picking a different one is the main thing an operator does here. */}
+ picking a different one is the main thing an operator does here. */}
       {sources.length > 1 ? (
-        <div className="max-h-44 shrink-0 overflow-y-auto border-t border-rail bg-panel">
+        <div className="max-h-44 shrink-0 overflow-y-auto border-t  bg-card">
           {sources.map((s, index) => (
             <SourceRow
               key={s.id}

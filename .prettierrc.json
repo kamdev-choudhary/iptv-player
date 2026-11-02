@@ -1,0 +1,15 @@
+{
+  "semi": false,
+  "singleQuote": true,
+  "printWidth": 100,
+  "tabWidth": 2,
+  "trailingComma": "all",
+  "arrowParens": "always",
+  "bracketSameLine": false,
+  "overrides": [
+    {
+      "files": ["*.md", "*.json", "*.yml", "*.yaml"],
+      "options": { "printWidth": 80 }
+    }
+  ]
+}

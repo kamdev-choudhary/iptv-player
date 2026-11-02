@@ -102,7 +102,7 @@ export default function App() {
           if (settingsOpen) setSettingsOpen(false)
           else if (document.activeElement === searchRef.current) searchRef.current?.blur()
         },
-        ' ': playback.togglePlay,
+        '': playback.togglePlay,
         m: playback.toggleMute,
         f: fullscreen,
         p: playback.togglePictureInPicture,
@@ -139,7 +139,7 @@ export default function App() {
         <div
           className={clsx(
             'min-h-0 xl:block',
-            filtersOpen ? 'block border-b border-rail xl:border-b-0' : 'hidden',
+            filtersOpen ? 'block border-b  xl:border-b-0' : 'hidden',
           )}
         >
           <FilterPanel
@@ -152,12 +152,8 @@ export default function App() {
           />
         </div>
 
-        <div ref={stageRef} className="min-h-0 bg-rack">
-          <Stage
-            {...playback}
-            channel={channel.data ?? null}
-            onFullscreen={fullscreen}
-          />
+        <div ref={stageRef} className="min-h-0 bg-background">
+          <Stage {...playback} channel={channel.data ?? null} onFullscreen={fullscreen} />
         </div>
 
         <div id="lineup" className="min-h-0">
@@ -170,9 +166,7 @@ export default function App() {
             refreshing={view === 'all' && lineup.isFetching && !lineup.isFetchingNextPage}
             hasMore={view === 'all' && Boolean(lineup.hasNextPage)}
             loadingMore={view === 'all' && lineup.isFetchingNextPage}
-            total={
-              view === 'all' ? (lineup.data?.pages[0]?.total ?? 0) : channels.length
-            }
+            total={view === 'all' ? (lineup.data?.pages[0]?.total ?? 0) : channels.length}
             error={activeList.error}
             onOpen={open}
             onLoadMore={() => void lineup.fetchNextPage()}

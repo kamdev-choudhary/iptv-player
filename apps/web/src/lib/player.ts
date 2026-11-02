@@ -40,7 +40,8 @@ async function loadHls() {
   return hlsModule.default
 }
 
-const isHlsUrl = (url: string) => /\.m3u8/i.test(url) || !/\.(mpd|mp4|flv|ogg|webm)(\?|$)/i.test(url)
+const isHlsUrl = (url: string) =>
+  /\.m3u8/i.test(url) || !/\.(mpd|mp4|flv|ogg|webm)(\?|$)/i.test(url)
 
 /**
  * A host that refuses cross-origin reads and a host that is simply gone both
@@ -56,11 +57,16 @@ async function reachable(url: string) {
   }
 }
 
-async function classify(data: ErrorData, source: ApiSource, viaProxy: boolean): Promise<HealthReason> {
+async function classify(
+  data: ErrorData,
+  source: ApiSource,
+  viaProxy: boolean,
+): Promise<HealthReason> {
   if (data.type === 'mediaError') return 'media'
 
   const details = String(data.details ?? '')
-  if (details.includes('manifestParsing') || details.includes('IncompatibleCodecs')) return 'notstream'
+  if (details.includes('manifestParsing') || details.includes('IncompatibleCodecs'))
+    return 'notstream'
 
   const status = data.response?.code ?? 0
   if (status === 404 || status === 410) return 'gone'
@@ -120,7 +126,8 @@ export class Player {
     if (this.#stale(token)) return
     if (HlsCtor.isSupported()) return this.#playHls(HlsCtor, url, source, viaProxy, token)
     // Safari plays HLS in the element itself, where hls.js is unsupported.
-    if (this.#video.canPlayType('application/vnd.apple.mpegurl')) return this.#playNative(url, token)
+    if (this.#video.canPlayType('application/vnd.apple.mpegurl'))
+      return this.#playNative(url, token)
     throw new StreamError('unsupported')
   }
 

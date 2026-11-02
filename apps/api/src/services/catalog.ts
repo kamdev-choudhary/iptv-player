@@ -143,27 +143,40 @@ export async function listChannels(query: ChannelQuery): Promise<Page<ApiChannel
     : sql<number>`0`
 
   const sortColumn = query.sort === 'name' ? null : SORT_COLUMN[query.sort]
-  // Relevance wins over the requested sort while a query is active; otherwise
-  // the best match for "bbc" could sit a thousand rows down a name sort.
-  const key: RawBuilder<number> = searching ? rank : sortColumn ? sql.ref(sortColumn) : sql<number>`0`
-  const descending = !searching && sortColumn !== null
+
+  /**
+   * Relevance wins over the requested sort while a query is active; otherwise
+   * the best match for "bbc" could sit a thousand rows down a name sort. A
+   * plain name sort has no leading key at all — `order by 0` would be read as
+   * a column position, not as a constant.
+   */
+  const key: { expression: RawBuilder<number>; descending: boolean } | null = searching
+    ? { expression: rank, descending: false }
+    : sortColumn
+      ? { expression: sql.ref(sortColumn), descending: true }
+      : null
 
   let rows = base.select([rank.as('rank')])
 
   if (cursor) {
-    const cmp = descending ? sql`<` : sql`>`
-    rows = rows.where(
-      sql<SqlBool>`(${key} ${cmp} ${sql.val(cursor.v)})
-        or (${key} = ${sql.val(cursor.v)}
-          and (${sql.ref('name')}, ${sql.ref('id')}) > (${sql.val(cursor.n)}, ${sql.val(cursor.i)}))`,
-    )
+    const after = sql<SqlBool>`(${sql.ref('name')}, ${sql.ref('id')}) > (${sql.val(
+      cursor.n,
+    )}, ${sql.val(cursor.i)})`
+    rows = key
+      ? rows.where(
+          sql<SqlBool>`(${key.expression} ${key.descending ? sql`<` : sql`>`} ${sql.val(cursor.v)})
+            or (${key.expression} = ${sql.val(cursor.v)} and ${after})`,
+        )
+      : rows.where(after)
   }
 
-  const ordered = rows
-    .orderBy(descending ? sql`${key} desc` : sql`${key} asc`)
-    .orderBy('name', 'asc')
-    .orderBy('id', 'asc')
-    .limit(query.limit + 1)
+  let ordered = rows
+  if (key) {
+    ordered = ordered.orderBy(
+      key.descending ? sql`${key.expression} desc` : sql`${key.expression} asc`,
+    )
+  }
+  ordered = ordered.orderBy('name', 'asc').orderBy('id', 'asc').limit(query.limit + 1)
 
   const [found, total] = await Promise.all([ordered.execute(), totalPromise])
 

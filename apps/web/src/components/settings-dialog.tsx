@@ -27,11 +27,12 @@ function PlaybackSettings({ settings }: { settings: Prefs }) {
         checked={settings.autoProxy}
         onChange={(autoProxy) => prefs.set({ autoProxy })}
       />
-      <p className="max-w-[56ch] text-micro text-etch">
+      <p className="max-w-[56ch] text-micro text-muted-foreground">
         A browser cannot fetch a plain http stream from an https page, cannot read a server that
         refuses cross-origin requests, and cannot send the User-Agent some broadcasters insist on.
         Your server can do all three, so routing a failed source through it is usually what makes it
-        play. Every byte then crosses your box, which is why it is a fallback rather than the default.
+        play. Every byte then crosses your box, which is why it is a fallback rather than the
+        default.
       </p>
 
       <Field
@@ -64,7 +65,7 @@ function SourceEditor({ channel, token }: { channel: ChannelDetail; token: strin
   const patch = usePatchSource(token)
 
   if (!source) {
-    return <p className="text-small text-etch">This channel has no sources to edit.</p>
+    return <p className="text-small text-muted-foreground">This channel has no sources to edit.</p>
   }
 
   return (
@@ -78,7 +79,7 @@ function SourceEditor({ channel, token }: { channel: ChannelDetail; token: strin
             setSourceId(next)
             setUrl(channel.sources.find((s) => s.id === next)?.url ?? '')
           }}
-          className="h-8 w-full rounded-control border border-rail bg-panel px-2 text-small"
+          className="h-8 w-full rounded-md border  bg-card px-2 text-small"
         >
           {channel.sources.map((s, i) => (
             <option key={s.id} value={String(s.id)}>
@@ -89,7 +90,12 @@ function SourceEditor({ channel, token }: { channel: ChannelDetail; token: strin
       </Field>
 
       <Field label="Stream address" htmlFor="edit-url">
-        <Input id="edit-url" value={url} onChange={(e) => setUrl(e.target.value)} spellCheck={false} />
+        <Input
+          id="edit-url"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          spellCheck={false}
+        />
       </Field>
 
       <div className="grid grid-cols-2 gap-2">
@@ -149,8 +155,8 @@ function SourceEditor({ channel, token }: { channel: ChannelDetail; token: strin
           <span className={probe.data.ok ? 'text-live' : 'text-fault'}>
             {probe.data.ok ? 'Reached it' : `Failed: ${probe.data.reason}`}
           </span>
-          <span className="text-etch">
-            {' — '}
+          <span className="text-muted-foreground">
+            {'—'}
             {probe.data.height ? `${probe.data.height}p, ` : ''}
             {latencyLabel(probe.data.latencyMs)}
             {probe.data.cors === false ? ', needs the server to play in a browser' : ''}
@@ -182,7 +188,7 @@ function JobsPanel({ token }: { token: string }) {
           Probe stale sources
         </Button>
       </div>
-      <p className="max-w-[56ch] text-micro text-etch">
+      <p className="max-w-[56ch] text-micro text-muted-foreground">
         A pull rewrites only what it owns. Anything you have edited here is left alone, so a
         corrected address survives tonight&rsquo;s run.
       </p>
@@ -195,9 +201,9 @@ function JobsPanel({ token }: { token: string }) {
           {runs.data.items.slice(0, 8).map((item) => (
             <li
               key={item.id}
-              className="flex items-baseline gap-2 border-b border-rail py-1.5 text-micro last:border-b-0"
+              className="flex items-baseline gap-2 border-b  py-1.5 text-micro last:border-b-0"
             >
-              <span className="w-14 text-readout">{item.job}</span>
+              <span className="w-14 text-foreground">{item.job}</span>
               <span
                 className={
                   item.status === 'ok'
@@ -209,24 +215,25 @@ function JobsPanel({ token }: { token: string }) {
               >
                 {item.status}
               </span>
-              <span className="tabular ml-auto text-etch">
-                {new Intl.DateTimeFormat(undefined, { timeStyle: 'short', dateStyle: 'short' }).format(
-                  new Date(item.startedAt),
-                )}
+              <span className="tabular ml-auto text-muted-foreground">
+                {new Intl.DateTimeFormat(undefined, {
+                  timeStyle: 'short',
+                  dateStyle: 'short',
+                }).format(new Date(item.startedAt))}
               </span>
               {item.stats ? (
                 <Readout
                   value={Object.entries(item.stats)
                     .slice(0, 3)
                     .map(([k, v]) => `${k} ${v}`)
-                    .join('  ')}
+                    .join('')}
                 />
               ) : null}
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-small text-etch">
+        <p className="text-small text-muted-foreground">
           {runs.error ? runs.error.message : 'No runs recorded yet.'}
         </p>
       )}
@@ -317,7 +324,7 @@ export function SettingsDialog({
               {channel ? (
                 <SourceEditor channel={channel} token={token} />
               ) : (
-                <p className="text-small text-etch">
+                <p className="text-small text-muted-foreground">
                   Tune a channel first, then come back here to edit its sources.
                 </p>
               )}
