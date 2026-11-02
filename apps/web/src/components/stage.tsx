@@ -76,6 +76,45 @@ function SourceList({
 }
 
 /**
+ * Whether the thing you just tapped is actually playing.
+ *
+ * The picture answers this on a desktop, where it is always in view. On a
+ * phone it is a quarter of the screen above a list you are scrolling, so the
+ * state is also said in words right beside the channel's name.
+ */
+function NowPlaying({ phase, viaProxy }: { phase: PlaybackState['phase']; viaProxy: boolean }) {
+  if (phase === 'idle') return null
+
+  const state = phase === 'live' ? 'live' : phase === 'dead' ? 'fault' : 'hold'
+  const label =
+    phase === 'live'
+      ? viaProxy
+        ? 'Playing via server'
+        : 'Playing'
+      : phase === 'dead'
+        ? 'Not playing'
+        : 'Connecting'
+
+  return (
+    <span className="flex shrink-0 items-center gap-1.5">
+      <Tally state={state} />
+      <span
+        className={cn(
+          'text-small',
+          phase === 'live'
+            ? 'text-live'
+            : phase === 'dead'
+              ? 'text-fault'
+              : 'text-muted-foreground',
+        )}
+      >
+        {label}
+      </span>
+    </span>
+  )
+}
+
+/**
  * Every playback control comes from the playback hook, which owns the video
  * element. Fullscreen is the exception: it applies to the stage container, so
  * the page that lays the stage out passes it in.
@@ -123,9 +162,9 @@ export function Stage({
   const live = phase === 'live'
 
   return (
-    <section aria-label="Player" className="flex flex-col gap-3 lg:h-full lg:min-h-0">
-      {/* 16:9 on a phone so the page can scroll past it; on a desktop it takes
-          whatever height the column has left. */}
+    <section aria-label="Player" className="flex h-full min-h-0 flex-col gap-3">
+      {/* 16:9 on a phone, where the list below needs the rest of the frame; on
+          a desktop it takes whatever height the column has left. */}
       <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black lg:aspect-auto lg:min-h-0 lg:flex-1">
         <video
           ref={videoRef}
@@ -158,7 +197,7 @@ export function Stage({
           {channel?.name ?? 'Nothing playing'}
         </h1>
 
-        {viaProxy && live ? <Badge variant="routed">through server</Badge> : null}
+        <NowPlaying phase={phase} viaProxy={viaProxy} />
 
         {renditions.length > 1 ? (
           <PanelSelect

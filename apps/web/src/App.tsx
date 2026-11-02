@@ -111,7 +111,7 @@ export default function App() {
   )
 
   return (
-    <div className="flex min-h-dvh flex-col lg:h-dvh lg:overflow-hidden">
+    <div className="flex h-dvh flex-col overflow-hidden">
       <TopBar
         searchRef={searchRef}
         search={search}
@@ -121,14 +121,16 @@ export default function App() {
         onOpenSettings={() => setSettingsOpen(true)}
       />
 
-      <main className="flex flex-1 flex-col gap-3 px-3 pb-3 lg:grid lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-4 lg:px-4 lg:pb-4">
-        <div ref={stageRef} className="lg:min-h-0">
+      {/* Phone: the stage takes the height it needs, the list takes the rest.
+          Desktop: two columns, each the full height of the frame. */}
+      <main className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] gap-3 px-3 pb-3 lg:grid-cols-[minmax(0,1fr)_23rem] lg:grid-rows-1 lg:gap-4 lg:px-4 lg:pb-4">
+        <div ref={stageRef} className="min-h-0">
           <Stage {...playback} channel={channel.data ?? null} onFullscreen={fullscreen} />
         </div>
 
         <div
           id="lineup"
-          className="overflow-hidden rounded-xl border bg-card lg:flex lg:min-h-0 lg:flex-col"
+          className="flex min-h-0 flex-col overflow-hidden rounded-xl border bg-card"
         >
           <Lineup
             channels={channels}

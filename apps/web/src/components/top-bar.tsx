@@ -28,10 +28,7 @@ export function TopBar({
   onOpenSettings,
 }: TopBarProps) {
   return (
-    <header
-      className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 bg-background/90
-                 px-3 backdrop-blur-sm sm:gap-3 sm:px-4 lg:static lg:backdrop-blur-none"
-    >
+    <header className="flex h-14 shrink-0 items-center gap-2 px-3 sm:gap-3 sm:px-4">
       <a
         href="#lineup"
         className="flex items-center gap-2 text-section leading-none"

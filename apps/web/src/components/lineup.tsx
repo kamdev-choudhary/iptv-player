@@ -120,16 +120,14 @@ export function Lineup({
   }, [hasMore, onLoadMore])
 
   return (
-    <section aria-label="Channels" className="flex flex-col lg:h-full lg:min-h-0">
+    <section aria-label="Channels" className="flex h-full min-h-0 flex-col">
       <header className="flex h-11 shrink-0 items-center gap-2 border-b px-4">
         <h2 className="text-small text-muted-foreground">
           {loading ? 'Loading channels' : `${total.toLocaleString()} channels`}
         </h2>
       </header>
 
-      {/* On a phone this is not a scroll container at all: the page is, and a
-          nested one would trap the scroll on the longest list in the app. */}
-      <div className="p-1.5 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5">
         {error ? (
           <Empty
             head="The channel list could not be loaded"
