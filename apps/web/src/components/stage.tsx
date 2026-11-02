@@ -103,10 +103,10 @@ export function Stage({
 }: StageProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const live = phase === 'live'
-  // The overlay hides only over a moving picture. With nothing playing there is
-  // nothing for it to be in the way of.
-  const { active, wake } = useActivity(2600, menuOpen || !live)
-  const showControls = active
+  const { ref: stageRef, active, wake } = useActivity<HTMLElement>()
+  // The overlay only hides over a moving picture: with nothing playing, and
+  // with a menu open, there is nothing for it to be in the way of.
+  const showControls = active || menuOpen || !live
 
   const statusLabel =
     phase === 'live'
@@ -127,11 +127,9 @@ export function Stage({
 
   return (
     <section
+      ref={stageRef}
       aria-label="Player"
-      className="group/stage relative h-full min-h-0 overflow-hidden rounded-xl bg-black"
-      onPointerMove={wake}
-      onPointerLeave={() => !menuOpen && undefined}
-      onFocus={wake}
+      className="relative h-full min-h-0 overflow-hidden rounded-xl bg-black"
     >
       <video
         ref={videoRef}
@@ -218,7 +216,19 @@ export function Stage({
             <Maximize2 />
           </Button>
 
-          <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+          <DropdownMenu
+            open={menuOpen}
+
+            onOpenChange={(open) => {
+              setMenuOpen(open)
+
+              // Closing the menu restarts the countdown rather than hiding the
+
+              // bar out from under the cursor.
+
+              wake()
+            }}
+          >
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
