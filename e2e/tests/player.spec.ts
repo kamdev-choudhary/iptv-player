@@ -21,10 +21,13 @@ test('says whether the channel it tuned is playing', async ({ app }) => {
 })
 
 test('marks the tuned row in the list', async ({ app }) => {
-  const name = await rows(app).first().innerText()
-  await rows(app).first().click()
+  const row = rows(app).first()
+  // The first line of a row is the logo placeholder's initials; the name is
+  // the first truncating span inside it.
+  const name = await row.locator('span.truncate').first().innerText()
+  await row.click()
   await app.waitForTimeout(1500)
-  await expect(app.locator('section[aria-label="Player"]')).toContainText(name.split('\n')[0]!)
+  await expect(app.locator('section[aria-label="Player"]')).toContainText(name)
 })
 
 test('keeps its controls over the picture, not beside it', async ({ app }) => {
@@ -57,7 +60,12 @@ test('offers a way out when nothing played', async ({ app }) => {
   await tuneFirst(app)
   const stage = app.locator('section[aria-label="Player"]')
 
-  if (await stage.getByText('Not playing').isVisible().catch(() => false)) {
+  if (
+    await stage
+      .getByText('Not playing')
+      .isVisible()
+      .catch(() => false)
+  ) {
     // A dead channel must never be a dead end: the slate names the cause and
     // offers whatever could still change the outcome.
     const slate = stage.locator('h2')
@@ -99,7 +107,10 @@ test('a tap on the picture shows and hides the controls, and never pauses', asyn
 
   // Only meaningful over a running picture.
   test.skip(
-    !(await stage.getByText('Playing').isVisible().catch(() => false)),
+    !(await stage
+      .getByText('Playing')
+      .isVisible()
+      .catch(() => false)),
     'nothing playing to tap on',
   )
 

@@ -75,11 +75,28 @@ export default function App() {
     autoProxy: settings.autoProxy,
   })
 
-  const fullscreen = useCallback(() => {
+  /**
+   * Fullscreen, and on a phone the rotation that should come with it.
+   *
+   * `screen.orientation.lock` only works while already fullscreen, and only on
+   * Android; iOS has no API for it and ignores the request. Both failures are
+   * swallowed because neither should stop the picture going fullscreen.
+   */
+  const fullscreen = useCallback(async () => {
     const target = stageRef.current
     if (!target) return
-    if (document.fullscreenElement) void document.exitFullscreen()
-    else void target.requestFullscreen().catch(() => {})
+
+    const orientation: (ScreenOrientation & { lock?: (to: string) => Promise<void> }) | undefined =
+      window.screen?.orientation
+
+    if (document.fullscreenElement) {
+      await document.exitFullscreen().catch(() => {})
+      orientation?.unlock?.()
+      return
+    }
+
+    await target.requestFullscreen().catch(() => {})
+    await orientation?.lock?.('landscape').catch(() => {})
   }, [])
 
   useHotkeys(
@@ -93,7 +110,7 @@ export default function App() {
         },
         ' ': playback.togglePlay,
         m: playback.toggleMute,
-        f: fullscreen,
+        f: () => void fullscreen(),
         p: playback.togglePictureInPicture,
         n: playback.nextSource,
         s: () => setSettingsOpen((wasOpen) => !wasOpen),
@@ -122,7 +139,11 @@ export default function App() {
           Desktop: two columns, each the full height of the frame. */}
       <main className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] gap-3 px-3 pb-3 lg:grid-cols-[minmax(0,1fr)_23rem] lg:grid-rows-1 lg:gap-4 lg:px-4 lg:pb-4">
         <div ref={stageRef} className="min-h-0">
-          <Stage {...playback} channel={channel.data ?? null} onFullscreen={fullscreen} />
+          <Stage
+            {...playback}
+            channel={channel.data ?? null}
+            onFullscreen={() => void fullscreen()}
+          />
         </div>
 
         <div
