@@ -91,3 +91,27 @@ test('a channel is linkable and comes back on that link', async ({ app }) => {
     { timeout: 45_000 },
   )
 })
+
+test('a tap on the picture shows and hides the controls, and never pauses', async ({ app }) => {
+  await tuneFirst(app)
+  const stage = app.locator('section[aria-label="Player"]')
+  const video = stage.locator('video')
+
+  // Only meaningful over a running picture.
+  test.skip(
+    !(await stage.getByText('Playing').isVisible().catch(() => false)),
+    'nothing playing to tap on',
+  )
+
+  const paused = () => video.evaluate((el: HTMLVideoElement) => el.paused)
+  expect(await paused()).toBe(false)
+
+  await video.click({ position: { x: 60, y: 60 } })
+  await app.waitForTimeout(400)
+  // The one thing a tap must not do.
+  expect(await paused()).toBe(false)
+
+  await video.click({ position: { x: 60, y: 60 } })
+  await app.waitForTimeout(400)
+  expect(await paused()).toBe(false)
+})

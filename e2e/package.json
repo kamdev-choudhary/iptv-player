@@ -10,10 +10,12 @@
     "e2e:headed": "playwright test --headed",
     "e2e:report": "playwright show-report",
     "e2e:install": "playwright install --with-deps chromium",
-    "clean": "rm -rf test-results playwright-report .turbo"
+    "clean": "rm -rf test-results playwright-report .turbo",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
+    "@types/node": "^22.20.5",
     "typescript": "^5.9.3"
   }
 }

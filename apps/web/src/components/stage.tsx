@@ -103,7 +103,7 @@ export function Stage({
 }: StageProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const live = phase === 'live'
-  const { ref: stageRef, active, wake } = useActivity<HTMLElement>()
+  const { ref: stageRef, active, wake, toggle } = useActivity<HTMLElement>()
   // The overlay only hides over a moving picture: with nothing playing, and
   // with a menu open, there is nothing for it to be in the way of.
   const showControls = active || menuOpen || !live
@@ -136,7 +136,7 @@ export function Stage({
         playsInline
         controls={false}
         muted={muted}
-        onClick={live ? togglePlay : undefined}
+        onClick={live ? toggle : undefined}
         className={cn('size-full', live ? 'opacity-100' : 'pointer-events-none opacity-0')}
       />
 
