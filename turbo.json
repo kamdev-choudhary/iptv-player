@@ -1,20 +1,35 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalEnv": ["NODE_ENV"],
-  "globalDependencies": ["tsconfig.base.json", ".env"],
+  "globalEnv": [
+    "NODE_ENV"
+  ],
+  "globalDependencies": [
+    "tsconfig.base.json",
+    ".env"
+  ],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**"
+      ]
     },
     "typecheck": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "outputs": []
     },
     "test": {
-      "dependsOn": ["^build"],
-      "outputs": ["coverage/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "coverage/**"
+      ]
     },
     "test:watch": {
       "cache": false,
@@ -26,6 +41,10 @@
     },
     "clean": {
       "cache": false
+    },
+    "e2e": {
+      "cache": false,
+      "persistent": false
     }
   }
 }

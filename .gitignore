@@ -6,3 +6,5 @@ dist/
 .env.local
 .env.*.local
 .turbo/
+test-results/
+playwright-report/

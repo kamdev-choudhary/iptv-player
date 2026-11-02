@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "tsBuildInfoFile": "./node_modules/.tmp/e2e.tsbuildinfo"
+  },
+  "include": ["tests", "playwright.config.ts", "fixtures.ts"]
+}
