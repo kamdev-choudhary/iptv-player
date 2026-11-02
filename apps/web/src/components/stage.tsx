@@ -187,9 +187,11 @@ export function Stage({
       </div>
 
       <div className="flex shrink-0 flex-wrap items-center gap-x-2 gap-y-1">
+        {/* Full width on a phone, so the name gets a line of its own and the
+            controls wrap underneath rather than squeezing it to three letters. */}
         <h1
           className={cn(
-            'min-w-0 flex-1 truncate text-section leading-tight',
+            'w-full min-w-0 truncate text-section leading-tight sm:w-auto sm:flex-1',
             // Nothing tuned yet: this is a prompt, not a title.
             !channel && 'text-muted-foreground',
           )}
