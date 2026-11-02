@@ -17,6 +17,9 @@ export default defineConfig({
       DATABASE_URL: 'postgres://tuner:tuner@localhost:5432/tuner_test',
       STREAM_SECRET: 'test-secret-at-least-16-chars-long',
       NODE_ENV: 'test',
+      // The route-level suite builds a real server; its request log would bury
+      // the test output it is there to produce.
+      LOG_LEVEL: 'silent',
     },
     include: ['tests/**/*.test.ts'],
     // The suite is deliberately all pure functions: playlist rewriting, M3U
