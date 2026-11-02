@@ -29,7 +29,11 @@ export function TopBar({
 }: TopBarProps) {
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 px-4">
-      <a href="#lineup" className="flex items-center gap-2 text-section leading-none" aria-label="Tuner">
+      <a
+        href="#lineup"
+        className="flex items-center gap-2 text-section leading-none"
+        aria-label="Tuner"
+      >
         <span aria-hidden className="size-2.5 rounded-pill bg-signal" />
         <span className="font-medium tracking-tight">Tuner</span>
       </a>

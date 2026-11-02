@@ -1,28 +1,25 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { clsx } from 'clsx'
-import type { ApiChannel, SortKey } from '@tuner/shared'
-import { ControlRail } from '@/components/control-rail.tsx'
-import { FilterPanel } from '@/components/filter-panel.tsx'
+import type { ApiChannel } from '@tuner/shared'
+import { FilterSheet, type LibraryView } from '@/components/filter-sheet.tsx'
 import { Lineup } from '@/components/lineup.tsx'
 import { SettingsDialog } from '@/components/settings-dialog.tsx'
 import { Stage } from '@/components/stage.tsx'
+import { TopBar } from '@/components/top-bar.tsx'
 import { useChannel, useChannelsByIds, useFacets, useLineup } from '@/api/hooks.ts'
 import { useDebounced } from '@/hooks/use-debounced.ts'
 import { useHotkeys } from '@/hooks/use-hotkeys.ts'
 import { usePlayback } from '@/hooks/use-playback.ts'
 import { usePrefs } from '@/hooks/use-prefs.ts'
-import { prefs } from '@/lib/prefs.ts'
+import { activeFilterCount, prefs } from '@/lib/prefs.ts'
 
 /**
- * Three panels: filters, picture, lineup.
+ * Two panes: the picture, and the channels.
  *
- * The picture sits in the middle because choosing what to watch should never
- * cost you sight of what you are watching — the lineup stays open beside it
- * rather than covering it. Below 1280px the panels stack and the filters fold
- * away, since there is no room for three columns and the picture wins.
+ * Everything else — filters, settings, the sources behind a channel — opens
+ * over the top and closes again. The picture is the reason the page exists, so
+ * it keeps the room, and the list beside it means choosing what to watch never
+ * costs you sight of what you are watching. Below 1024px they stack.
  */
-
-type View = 'all' | 'starred' | 'recent'
 
 /** The deep link, read once at startup: `#c=<channel-id>`. */
 function channelFromHash(): string | null {
@@ -33,7 +30,7 @@ function channelFromHash(): string | null {
 export default function App() {
   const settings = usePrefs()
   const [search, setSearch] = useState('')
-  const [view, setView] = useState<View>('all')
+  const [view, setView] = useState<LibraryView>('all')
   const [tunedId, setTunedId] = useState<string | null>(channelFromHash)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -73,6 +70,7 @@ export default function App() {
         : (recent.data ?? [])
 
   const channel = useChannel(tunedId)
+  const activeList = view === 'all' ? lineup : view === 'starred' ? starred : recent
 
   const open = useCallback((next: ApiChannel) => {
     setTunedId(next.id)
@@ -100,9 +98,10 @@ export default function App() {
         '/': () => searchRef.current?.focus(),
         escape: () => {
           if (settingsOpen) setSettingsOpen(false)
+          else if (filtersOpen) setFiltersOpen(false)
           else if (document.activeElement === searchRef.current) searchRef.current?.blur()
         },
-        '': playback.togglePlay,
+        ' ': playback.togglePlay,
         m: playback.toggleMute,
         f: fullscreen,
         p: playback.togglePictureInPicture,
@@ -111,6 +110,7 @@ export default function App() {
       }),
       [
         settingsOpen,
+        filtersOpen,
         fullscreen,
         playback.togglePlay,
         playback.toggleMute,
@@ -120,50 +120,29 @@ export default function App() {
     ),
   )
 
-  const activeList = view === 'all' ? lineup : view === 'starred' ? starred : recent
-
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
-      <ControlRail
-        ref={searchRef}
+      <TopBar
+        searchRef={searchRef}
         search={search}
         onSearch={setSearch}
-        sort={settings.sort}
-        onSort={(sort: SortKey) => prefs.set({ sort })}
-        facets={facets.data}
+        activeFilters={activeFilterCount(settings.filters)}
+        onOpenFilters={() => setFiltersOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
-        onToggleFilters={() => setFiltersOpen((wasOpen) => !wasOpen)}
       />
 
-      <main className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[1fr_auto] xl:grid-cols-[232px_1fr_360px] xl:grid-rows-1">
-        <div
-          className={clsx(
-            'min-h-0 xl:block',
-            filtersOpen ? 'block border-b  xl:border-b-0' : 'hidden',
-          )}
-        >
-          <FilterPanel
-            filters={settings.filters}
-            facets={facets.data}
-            view={view}
-            starredCount={settings.favorites.length}
-            recentCount={settings.recent.length}
-            onView={setView}
-          />
-        </div>
-
-        <div ref={stageRef} className="min-h-0 bg-background">
+      <main className="grid min-h-0 flex-1 grid-rows-[minmax(0,2fr)_minmax(0,1fr)] gap-4 px-4 pb-4 lg:grid-cols-[minmax(0,1fr)_22rem] lg:grid-rows-1">
+        <div ref={stageRef} className="min-h-0">
           <Stage {...playback} channel={channel.data ?? null} onFullscreen={fullscreen} />
         </div>
 
-        <div id="lineup" className="min-h-0">
+        <div id="lineup" className="min-h-0 rounded-lg bg-card">
           <Lineup
             channels={channels}
             facets={facets.data}
             tunedId={tunedId}
             favorites={settings.favorites}
             loading={activeList.isLoading}
-            refreshing={view === 'all' && lineup.isFetching && !lineup.isFetchingNextPage}
             hasMore={view === 'all' && Boolean(lineup.hasNextPage)}
             loadingMore={view === 'all' && lineup.isFetchingNextPage}
             total={view === 'all' ? (lineup.data?.pages[0]?.total ?? 0) : channels.length}
@@ -177,6 +156,18 @@ export default function App() {
           />
         </div>
       </main>
+
+      <FilterSheet
+        open={filtersOpen}
+        onOpenChange={setFiltersOpen}
+        filters={settings.filters}
+        sort={settings.sort}
+        facets={facets.data}
+        view={view}
+        starredCount={settings.favorites.length}
+        recentCount={settings.recent.length}
+        onView={setView}
+      />
 
       <SettingsDialog
         open={settingsOpen}
