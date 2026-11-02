@@ -1,4 +1,5 @@
-import { useEffect, useRef, type RefObject } from 'react'
+import { useEffect, useMemo, useRef, type RefObject } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { Search, Star } from 'lucide-react'
 import { Button, Empty, Input, Readout, RowSkeleton, Tally, cn } from '@tuner/ui'
 import type { ApiChannel, Facets } from '@tuner/shared'
@@ -13,7 +14,18 @@ import { ChannelMark } from './channel-mark.tsx'
  * from, and how sharp it is. An earlier version also printed the live-source
  * fraction, which was two more digits on every row saying what the dot already
  * says — the kind of density that makes a long list tiring to read.
+ *
+ * Only the rows near the viewport are in the document. Paging appends, so
+ * someone scrolling a filtered-but-still-large catalog accumulates pages, and
+ * every row carries a logo: keeping all of them mounted is a list that gets
+ * heavier the longer it is used.
  */
+
+/** Rows are a fixed composition, so the estimate is right before measuring. */
+const ROW_HEIGHT = 60
+
+/** How close to the end of the loaded rows asks the server for the next page. */
+const PREFETCH_ROWS = 8
 
 function Row({
   channel,
@@ -108,22 +120,38 @@ export function Lineup({
   onLoadMore,
   onClearFilters,
 }: LineupProps) {
-  const sentinel = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Paging happens when the end of the list comes into view, which is the only
-  // thing scroll position should ever trigger.
+  // `includes` on every row of every render is the kind of thing that only
+  // shows up once the list is long.
+  const starredIds = useMemo(() => new Set(favorites), [favorites])
+
+  const virtualizer = useVirtualizer({
+    count: channels.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    // Enough rows past the edge that a flick does not reach blank space.
+    overscan: 8,
+    getItemKey: (index) => channels[index]?.id ?? index,
+  })
+
+  const items = virtualizer.getVirtualItems()
+
+  // Paging happens when the rendered window reaches the end of what is loaded,
+  // which is the only thing scroll position should ever trigger. A sentinel
+  // element cannot do this job any more: it would sit at the bottom of a
+  // spacer thousands of pixels tall and never be rendered.
+  const lastIndex = items.at(-1)?.index
   useEffect(() => {
-    const node = sentinel.current
-    if (!node || !hasMore) return
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) onLoadMore()
-      },
-      { rootMargin: '400px' },
-    )
-    observer.observe(node)
-    return () => observer.disconnect()
-  }, [hasMore, onLoadMore])
+    if (!hasMore || loadingMore || lastIndex === undefined) return
+    if (lastIndex >= channels.length - PREFETCH_ROWS) onLoadMore()
+  }, [hasMore, loadingMore, lastIndex, channels.length, onLoadMore])
+
+  // A new search is a new list, and reading it from halfway down is not what
+  // anyone means by searching.
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0 })
+  }, [search])
 
   return (
     <section aria-label="Channels" className="flex h-full min-h-0 flex-col">
@@ -154,7 +182,10 @@ export function Lineup({
         </p>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5">
+      <div
+        ref={scrollRef}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5"
+      >
         {error ? (
           <Empty
             head="The channel list could not be loaded"
@@ -179,17 +210,30 @@ export function Lineup({
           />
         ) : (
           <>
-            {channels.map((channel) => (
-              <Row
-                key={channel.id}
-                channel={channel}
-                facets={facets}
-                tuned={channel.id === tunedId}
-                starred={favorites.includes(channel.id)}
-                onOpen={() => onOpen(channel)}
-              />
-            ))}
-            <div ref={sentinel} className="h-px" />
+            {/* The spacer carries the full height of the list, so the
+                scrollbar tells the truth about how much is below. */}
+            <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
+              {items.map((item) => {
+                const channel = channels[item.index]!
+                return (
+                  <div
+                    key={item.key}
+                    data-index={item.index}
+                    ref={virtualizer.measureElement}
+                    className="absolute top-0 left-0 w-full"
+                    style={{ transform: `translateY(${item.start}px)` }}
+                  >
+                    <Row
+                      channel={channel}
+                      facets={facets}
+                      tuned={channel.id === tunedId}
+                      starred={starredIds.has(channel.id)}
+                      onOpen={() => onOpen(channel)}
+                    />
+                  </div>
+                )
+              })}
+            </div>
             {loadingMore ? <RowSkeleton /> : null}
           </>
         )}

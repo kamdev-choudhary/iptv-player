@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import type { ApiChannel } from '@tuner/shared'
 import { FilterSheet, type LibraryView } from '@/components/filter-sheet.tsx'
+import { StageGuard } from '@/components/guard.tsx'
 import { Lineup } from '@/components/lineup.tsx'
 import { SettingsDialog } from '@/components/settings-dialog.tsx'
 import { Stage } from '@/components/stage.tsx'
@@ -139,11 +140,13 @@ export default function App() {
           Desktop: two columns, each the full height of the frame. */}
       <main className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] gap-3 px-3 pb-3 lg:grid-cols-[minmax(0,1fr)_23rem] lg:grid-rows-1 lg:gap-4 lg:px-4 lg:pb-4">
         <div ref={stageRef} className="min-h-0">
-          <Stage
-            {...playback}
-            channel={channel.data ?? null}
-            onFullscreen={() => void fullscreen()}
-          />
+          <StageGuard resetKey={tunedId}>
+            <Stage
+              {...playback}
+              channel={channel.data ?? null}
+              onFullscreen={() => void fullscreen()}
+            />
+          </StageGuard>
         </div>
 
         <div

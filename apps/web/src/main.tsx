@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster, TooltipProvider } from '@tuner/ui'
+import { AppGuard } from './components/guard.tsx'
 import App from './App.tsx'
 import './index.css'
 
@@ -33,7 +34,9 @@ createRoot(root).render(
   <StrictMode>
     <QueryClientProvider client={client}>
       <TooltipProvider delayDuration={400}>
-        <App />
+        <AppGuard>
+          <App />
+        </AppGuard>
         <Toaster position="bottom-right" />
       </TooltipProvider>
     </QueryClientProvider>
