@@ -81,8 +81,10 @@ export {
   Readout,
   RowSkeleton,
   Rule,
+  Segmented,
   type PanelSelectOption,
   type PanelSelectProps,
+  type SegmentedOption,
 } from './panel.tsx'
 
 export { TALLY_LABEL, Tally, TallyCount, type TallyState } from './tally.tsx'

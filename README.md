@@ -45,7 +45,8 @@ packages/
   shared/           zod schemas — the one contract both sides validate against
   ui/               shadcn/ui primitives, themed, plus this app's own vocabulary
 e2e/                playwright: the application driven in a real browser
-deploy/             nginx vhost, pm2 ecosystem and the deploy script
+deploy/             nginx vhost, pm2 ecosystem, deploy and backup scripts
+.github/workflows/  the checks every push runs
 ```
 
 Each backend module owns everything about itself, in four layers:
@@ -91,6 +92,29 @@ Generate both with `openssl rand -hex 32`.
 
 `STREAM_TOKEN` is optional and worth setting if the deployment is reachable
 from the internet: it makes the proxy yours rather than everyone's.
+
+## The client
+
+One screen: the picture, and the lineup beside it on a desktop or beneath it on
+a phone. Nothing scrolls the page itself — the list scrolls inside its own
+container, so the picture never leaves the screen and you can always see
+whether what you just tapped started playing. The controls are overlaid on the
+video rather than beside it, and a tap anywhere shows or hides them.
+
+Three things in it are worth knowing about:
+
+- **The list is virtualised.** Paging appends, every row carries a logo from
+  some broadcaster's CDN, and a filtered catalog can still be thousands of
+  rows. Only the rows near the viewport are in the document.
+- **It installs.** `vite-plugin-pwa` gives it a manifest, an icon and a service
+  worker, which is what makes it a thing on a phone's home screen rather than a
+  tab. The worker precaches the shell and nothing else: the catalog is live
+  data, hls.js is fetched only when someone presses play, and `/api`, `/stream`
+  and `/admin` are on the navigation denylist so a segment request is never
+  answered with `index.html`.
+- **A render error is not a white screen.** There are error boundaries around
+  the stage and around the application, so a fault in the player leaves the
+  lineup usable and lets you pick something else.
 
 ## How the catalog stays correct
 
@@ -198,25 +222,42 @@ honest about what the box can carry.
 
 ```sh
 pnpm lint          # oxlint across the workspace
+pnpm knip          # dead exports, unused dependencies
 pnpm typecheck     # tsc per package
 pnpm test          # vitest; tests live in each package's tests/
-pnpm check         # all three
+pnpm check         # all four
+pnpm format        # prettier
 
 pnpm e2e:install   # once: fetch the browser
 pnpm e2e           # playwright, desktop and mobile
 pnpm e2e:ui        # the same, with the inspector
 ```
 
-The unit suites are deliberately pure functions — playlist rewriting, M3U
-parsing, failover decisions, signing, cursors, the signal-state mapping. They
-are the parts with real branching in them, and they run in under two seconds.
+Every push runs the first group, then the second, in
+`.github/workflows/ci.yml`. The e2e job starts the runner's own Postgres,
+syncs a real catalog into it and drives a real browser; there is no container
+anywhere, here or in production.
+
+Most of the unit suite is pure functions — playlist rewriting, M3U parsing,
+failover decisions, signing, cursors, the signal-state mapping. They are the
+parts with real branching in them, and they run in under two seconds.
+
+The exception is `apps/api/tests/admin-auth.test.ts`, which builds the whole
+server and injects a request at every `/admin` route it finds. That suite
+exists because the admin API was once served to anyone who asked: `requireAdmin`
+was registered without `fastify-plugin`, so its hooks attached to an empty
+scope and protected nothing. Nothing in the code looked wrong. It discovers the
+routes from the built server rather than listing them, so a new admin module is
+covered the moment it is mounted.
 
 The end-to-end suite in `e2e/` drives the real application against the real
 database; it starts both dev servers if they are not already up. It asserts on
 behaviour rather than on any particular channel, because the catalog is eleven
 thousand strangers' streams and half of them are dead on any given day. What it
-checks is that the player always _says_ which — and it has already caught a
-filter button that rendered with no accessible name at all below `md`.
+checks is that the player always _says_ which. `a11y.spec.ts` scans each screen
+with axe — it is there because a hand-written test caught a filter button that
+rendered with no accessible name below `md`, and writing one test per control
+does not scale.
 
 ## Legal
 

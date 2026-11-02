@@ -37,6 +37,13 @@
   --color-live: #3fd08a;
   --color-hold: #6c7589;
   --color-fault: #e05260;
+  /* The same state as a filled surface. `fault` is tuned to be read *on* the
+     dark panel — as a dot, as text, as a border — which makes it far too light
+     to put white on: 3.8:1, under the 4.5 a label needs. shadcn's own answer is
+     a `dark:` variant, which this application cannot use because it has no
+     light mode to switch away from. Two values for two jobs is the honest
+     version of the same idea. */
+  --color-fault-fill: #b3302b;
   --color-routed: #8d7bea;
 
   /* The one accent: focus rings, the tuned channel, the wordmark. Nothing else. */

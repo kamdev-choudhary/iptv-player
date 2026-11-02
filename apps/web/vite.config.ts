@@ -33,14 +33,9 @@ const pwa = VitePWA({
   },
   workbox: {
     globPatterns: ['**/*.{js,css,html,svg,woff2}'],
-    // hls.js is split out precisely so it is not fetched until someone presses
-    // play; precaching it would download half a megabyte in the background on
-    // a phone that may never need it. It is cached normally once fetched.
     globIgnores: ['**/hls-*.js'],
     navigateFallback: '/index.html',
     navigateFallbackDenylist: [/^\/api\//, /^\/stream\//, /^\/admin\//, /^\/health$/],
-    // A served segment is megabytes and single-use; nothing about it should
-    // ever be held by a service worker.
     runtimeCaching: [
       {
         urlPattern: ({ url }) => url.origin === 'https://fonts.gstatic.com',

@@ -67,7 +67,13 @@ function report(error: unknown) {
   console.error('render failed', error)
 }
 
-export function StageGuard({ children, resetKey }: { children: ReactNode; resetKey: string | null }) {
+export function StageGuard({
+  children,
+  resetKey,
+}: {
+  children: ReactNode
+  resetKey: string | null
+}) {
   return (
     <ErrorBoundary
       FallbackComponent={StageFallback}

@@ -4,14 +4,12 @@ import {
   Field,
   PanelSelect,
   Rule,
+  Segmented,
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  Tabs,
-  TabsList,
-  TabsTrigger,
   TallyCount,
 } from '@tuner/ui'
 import { SORT_KEYS, type Facets, type SortKey } from '@tuner/shared'
@@ -81,19 +79,16 @@ export function FilterSheet({
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4">
-          <Tabs value={view} onValueChange={(next) => onView(next as LibraryView)}>
-            <TabsList className="w-full">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="starred">
-                Starred
-                {starredCount ? <span className="tabular opacity-70">{starredCount}</span> : null}
-              </TabsTrigger>
-              <TabsTrigger value="recent">
-                Recent
-                {recentCount ? <span className="tabular opacity-70">{recentCount}</span> : null}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <Segmented<LibraryView>
+            label="Library"
+            value={view}
+            onChange={onView}
+            options={[
+              { value: 'all', label: 'All' },
+              { value: 'starred', label: 'Starred', count: starredCount },
+              { value: 'recent', label: 'Recent', count: recentCount },
+            ]}
+          />
 
           {view === 'all' ? (
             <>

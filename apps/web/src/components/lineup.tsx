@@ -187,10 +187,7 @@ export function Lineup({
         </p>
       </header>
 
-      <div
-        ref={scrollRef}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5"
-      >
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5">
         {error ? (
           <Empty
             head="The channel list could not be loaded"

@@ -100,13 +100,12 @@ export async function buildServer(): Promise<FastifyInstance> {
     timeWindow: '1 minute',
   })
 
- 
   await app.register(underPressure, {
     maxEventLoopDelay: env.PRESSURE_MAX_EVENT_LOOP_DELAY_MS,
     maxRssBytes: env.PRESSURE_MAX_RSS_MB * 1024 * 1024,
     retryAfter: 15,
     exposeStatusRoute: false,
-   pressureHandler: (request, reply, type, value) => {
+    pressureHandler: (request, reply, type, value) => {
       if (!request.url.startsWith('/stream')) return
       request.log.warn({ type, value, url: request.url }, 'shedding a stream request')
       void reply

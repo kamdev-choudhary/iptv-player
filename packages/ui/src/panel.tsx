@@ -357,6 +357,65 @@ export function Empty({ head, body, action }: { head: string; body: string; acti
   )
 }
 
+export interface SegmentedOption<T extends string> {
+  value: T
+  label: string
+  /** Shown after the label, dimmed. Omitted when zero. */
+  count?: number
+}
+
+/**
+ * A segmented control: one of a few mutually exclusive views.
+ *
+ * Not `Tabs`, although it looks like them. A tab controls a panel that follows
+ * it in the document; this one changes what a list elsewhere on the screen is
+ * showing. Built as tabs it announced itself as controlling a tabpanel that
+ * does not exist — which axe reports, and which is a promise to a screen
+ * reader that nothing keeps.
+ */
+export function Segmented<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+  className,
+}: {
+  label: string
+  value: T
+  options: readonly SegmentedOption<T>[]
+  onChange: (value: T) => void
+  className?: string
+}) {
+  return (
+    <fieldset
+      aria-label={label}
+      className={cn('inline-flex h-9 w-full items-center rounded-lg bg-muted p-[3px]', className)}
+    >
+      {options.map((option) => {
+        const selected = option.value === value
+        return (
+          <Button
+            key={option.value}
+            variant="ghost"
+            size="sm"
+            aria-pressed={selected}
+            onClick={() => onChange(option.value)}
+            className={cn(
+              'h-full flex-1 gap-1.5 rounded-md px-2 text-sm font-medium',
+              selected
+                ? 'bg-background text-foreground shadow-sm hover:bg-background'
+                : 'text-foreground/60 hover:text-foreground',
+            )}
+          >
+            {option.label}
+            {option.count ? <span className="tabular opacity-70">{option.count}</span> : null}
+          </Button>
+        )
+      })}
+    </fieldset>
+  )
+}
+
 /** A scrollable region that keeps its own scroll from reaching the page. */
 export function PanelScroll({ className, ...rest }: ComponentProps<'div'>) {
   return (
