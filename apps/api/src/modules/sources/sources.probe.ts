@@ -125,6 +125,11 @@ export async function probeSource(input: ProbeInput): Promise<ProbeResult> {
     }
 
     return { ok: true, reason: 'ok', status: response.status, latencyMs, height, cors, variants }
+  } catch (err) {
+    // Reading the body can still fail after the headers arrived — most often
+    // the deadline firing mid-stream. That is a probe result, not a crash.
+    await response.body?.cancel().catch(() => {})
+    return fail(reasonForThrow(err), response.status)
   } finally {
     release()
   }

@@ -100,13 +100,32 @@ export async function runHealthSweep(
 
   const results = await mapLimit(queue, opts.concurrency, async (source) => {
     if (signal?.aborted) return null
-    const result = await probeSource({
-      url: source.url,
-      userAgent: source.user_agent,
-      referrer: source.referrer,
-      deep: true,
-      signal,
-    })
+
+    /**
+     * A sweep runs for an hour over tens of thousands of hostile strangers.
+     * One of them throwing something nobody anticipated must cost that one
+     * probe, not the thousands already done and not yet written.
+     */
+    let result
+    try {
+      result = await probeSource({
+        url: source.url,
+        userAgent: source.user_agent,
+        referrer: source.referrer,
+        deep: true,
+        signal,
+      })
+    } catch {
+      result = {
+        ok: false,
+        reason: 'network' as const,
+        status: null,
+        latencyMs: null,
+        height: null,
+        cors: null,
+        variants: [],
+      }
+    }
 
     if (result.ok) {
       live++

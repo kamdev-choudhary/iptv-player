@@ -1,5 +1,5 @@
 import type { RefObject } from 'react'
-import { Layers, Maximize2, PictureInPicture2, Volume2, VolumeX } from 'lucide-react'
+import { Layers, Maximize2, Pause, PictureInPicture2, Play, Volume2, VolumeX } from 'lucide-react'
 import {
   Badge,
   Button,
@@ -87,7 +87,9 @@ export interface StageProps extends PlaybackState {
   renditions: Rendition[]
   activeRendition: number
   muted: boolean
+  paused: boolean
   toggleMute: () => void
+  togglePlay: () => void
   nextSource: () => void
   tuneTo: (index: number) => void
   setRendition: (index: number) => void
@@ -110,7 +112,9 @@ export function Stage({
   renditions,
   activeRendition,
   muted,
+  paused,
   toggleMute,
+  togglePlay,
   tuneTo,
   setRendition,
   togglePictureInPicture,
@@ -188,8 +192,19 @@ export function Stage({
         <Button
           variant="ghost"
           size="icon-sm"
+          onClick={togglePlay}
+          disabled={!live}
+          aria-label={paused ? 'Play' : 'Pause'}
+          title={paused ? 'Play (space)' : 'Pause (space)'}
+        >
+          {paused ? <Play /> : <Pause />}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
           onClick={toggleMute}
           aria-label={muted ? 'Unmute' : 'Mute'}
+          title={muted ? 'Unmute (m)' : 'Mute (m)'}
         >
           {muted ? <VolumeX /> : <Volume2 />}
         </Button>
