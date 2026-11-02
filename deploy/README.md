@@ -41,6 +41,7 @@ pipeline for it.
   via node's own `--env-file-if-exists`; the values set in `env` here override
   the file, which is what makes them the deployment's decision.
 - **`deploy.sh`** → the routine deploy above.
+- **`backup.sh`** → a nightly `pg_dump`. See below.
 
 After editing `nginx.conf`:
 
@@ -109,6 +110,45 @@ should be held open, so detach it:
 ssh qp 'cd /srv/tuner && nohup setsid pnpm health --stale-hours 0 --limit 18500 --concurrency 32 > /tmp/tuner-health.log 2>&1 < /dev/null &'
 ssh qp 'tail -f /tmp/tuner-health.log'
 ```
+
+## Backups
+
+Most of this database is disposable: `pnpm sync` rebuilds it from iptv-org in a
+minute. What it cannot rebuild is the part someone typed — every row with
+`locked` set, which is each hand-corrected stream address and each hand-added
+channel. The sync deliberately reads past those rows, so nothing upstream will
+ever put them back.
+
+```sh
+ssh qp '/srv/tuner/deploy/backup.sh'
+ssh qp 'crontab -l | { cat; echo "0 4 * * * /srv/tuner/deploy/backup.sh >> /var/log/tuner-backup.log 2>&1"; } | crontab -'
+```
+
+Dumps land in `/srv/backups/tuner`, gzipped, fourteen days kept. Each one is
+written under a `.partial` name and renamed only once complete, so a dump cut
+short is never mistaken for a good one.
+
+To restore:
+
+```sh
+gunzip -c /srv/backups/tuner/tuner-2026-11-02-0400.sql.gz | psql "$DATABASE_URL"
+```
+
+A backup on the same disk as the database is only half a backup. Copy the
+directory off the box as well — these dumps are small enough that `rsync` to
+anywhere is enough.
+
+## Under load
+
+`@fastify/under-pressure` watches the event loop and refuses **new stream
+requests** with a 503 when the box is past `PRESSURE_MAX_EVENT_LOOP_DELAY_MS`.
+The read API and `/health` keep answering, deliberately: they are how you find
+out the box is struggling, so turning them off at that exact moment would be
+the wrong half to drop. A shed request logs `shedding a stream request` with
+the measured value.
+
+Ten viewers on ten addresses are within every rate limit and can still saturate
+the uplink, which is why this exists alongside `PROXY_RATE_LIMIT`.
 
 ## Checking on it
 
